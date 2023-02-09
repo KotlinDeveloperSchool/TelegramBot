@@ -1,0 +1,77 @@
+@startuml
+'https://plantuml.com/class-diagram
+hide circle
+skinparam linetype ortho
+
+entity "Word" as W {
+  id : int not null <<generated>> | **PK**
+  --
+  dict_id : int not null <<index>> | **FK**
+  --
+  rus : char(50) not null
+  eng : char(50) not null
+}
+
+entity "Dictionary" as D {
+  id : int not null <<generated>> | **PK**
+  --
+  user_id : int not null <<index>> | **FK**
+  --
+  name : char(50) not null
+}
+W }o--|| D
+
+entity "User" as U {
+  id : int not null <<generated>> | **PK**
+  --
+  tg_id : int not null //unique// <<index>>
+  name : char(100)
+}
+D }o--|| U
+
+entity "Favorite" as F {
+  id : int not null <<generated>> | **PK**
+  --
+  user_id : int not null <<index>> | **FK**
+}
+
+U ||--|| F
+
+entity "Fav_Dict" as FD {
+  id : int not null <<generated>> | **PK**
+  --
+  fav_id : int not null <<index>> | **FK**
+  dict_id : int not null | **FK**
+}
+
+FD }o--|| F
+FD }o--|| D
+
+entity "Result" as R {
+  id : int not null <<generated>> | **PK**
+  --
+  word_id : int not null | **FK**
+  user_id : int not null | **FK**
+  dict_id : int not null | **FK**
+  --
+  success : int
+  fails : int
+  diff : int
+  ==
+  <<index>> on (user_id, dict_id)
+}
+
+note top of R: Первоначально не будем\nреализовывать
+
+note left of R::diff
+  Значение рассчитывается как (fails - success)
+  для неравномерности рандома. Чем больше
+  это значение тем чаще будет выпадать слово,
+  а при diff <= -5 считать слово выученным
+  или завязаться на процентное соотношение
+end note
+
+R }o--|| U
+R }o---|| W
+
+@enduml
