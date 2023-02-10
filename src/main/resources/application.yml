@@ -1,0 +1,3 @@
+telegram:
+  botName: WordsByHeartBot
+  token: ${TOKEN}
