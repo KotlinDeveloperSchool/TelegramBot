@@ -21,10 +21,10 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <version>3.0.2</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.telegram/telegrambots-spring-boot-starter -->
+        <!-- https://mvnrepository.com/artifact/org.telegram/telegrambots -->
         <dependency>
             <groupId>org.telegram</groupId>
-            <artifactId>telegrambots-spring-boot-starter</artifactId>
+            <artifactId>telegrambots</artifactId>
             <version>6.5.0</version>
         </dependency>
 

@@ -1,4 +1,4 @@
-package ru.sber.developers
+package ru.sber.developers.bot
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
