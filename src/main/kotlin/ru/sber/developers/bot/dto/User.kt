@@ -1,3 +1,3 @@
-package ru.sber.developers.bot.dto
-
-data class User()
+//package ru.sber.developers.bot.dto
+//
+//data class User()
