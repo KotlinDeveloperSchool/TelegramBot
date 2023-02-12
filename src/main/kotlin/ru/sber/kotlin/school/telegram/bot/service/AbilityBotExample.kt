@@ -1,5 +1,6 @@
 package ru.sber.kotlin.school.telegram.bot.service
 
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.abilitybots.api.bot.AbilityBot
@@ -18,13 +19,15 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
+import ru.sber.kotlin.school.telegram.bot.repository.UserRepository
 
 @Component
 class AbilityBotExample(
     @Value("\${telegram.bot.token}")
     private val token: String,
     @Value("\${telegram.bot.name}")
-    private val name: String
+    private val name: String,
+    private var userRepository: UserRepository
 ) : AbilityBot(token, name) {
     override fun creatorId(): Long = 1234
 
@@ -59,6 +62,30 @@ class AbilityBotExample(
                     ${user.supportInlineQueries} - queries
                     ${user.isPremium} - premium
                 """.trimMargin()
+
+    fun start(): Ability {
+        return Ability.builder()
+            .name("start")
+            .info("starts bot")
+            .locality(Locality.ALL)
+            .privacy(Privacy.PUBLIC)
+            .action { ctx ->
+                if (!userRepository.findById(ctx.chatId().toInt()).isPresent) {
+                    val chatId = ctx.chatId()
+                    val user = ru.sber.kotlin.school.telegram.bot.model.User()
+                    user.id = chatId
+                    user.userName = ctx.user().userName
+                    user.firstName = ctx.user().firstName
+                    user.lastName = ctx.user().lastName
+                    userRepository.save(user)
+                }
+
+//                val data = prepareUserData(user)
+//                silent.send(data, ctx.chatId())
+            }
+            .post { ctx -> silent.send("Bye world!", ctx.chatId()) }
+            .build()
+    }
 
 
     /**

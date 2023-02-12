@@ -11,7 +11,7 @@ import javax.persistence.Table
 data class Word(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private val id: Int,
+    private val id: Long,
 
     private val rus: String,
 

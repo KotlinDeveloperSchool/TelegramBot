@@ -15,10 +15,10 @@ import javax.persistence.Table
 data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private val id: Int,
+    private val id: Long,
 
     @Column(name = "tg_id")
-    private val telegramId: Int,
+    private val telegramId: Long,
 
     private val username: String,
     private val firstname: String,
