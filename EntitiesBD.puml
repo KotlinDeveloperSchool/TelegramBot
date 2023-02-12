@@ -15,7 +15,7 @@ entity "Word" as W {
 entity "Dictionary" as D {
   id : int not null <<generated>> | **PK**
   --
-  user_id : int not null <<index>> | **FK**
+  owner_id : int not null <<index>> | **FK**
   --
   name : char(50) not null
 }
@@ -25,27 +25,22 @@ entity "User" as U {
   id : int not null <<generated>> | **PK**
   --
   tg_id : int not null //unique// <<index>>
-  name : char(100)
+  username : char(100)
+  firstname : char(100)
+  lastname : char(100)
 }
 D }o--|| U
 
 entity "Favorite" as F {
-  id : int not null <<generated>> | **PK**
   --
   user_id : int not null <<index>> | **FK**
-}
-
-U ||--|| F
-
-entity "Fav_Dict" as FD {
-  id : int not null <<generated>> | **PK**
-  --
-  fav_id : int not null <<index>> | **FK**
   dict_id : int not null | **FK**
+  ==
+  primary key on (user_id, dict_id)
 }
 
-FD }o--|| F
-FD }o--|| D
+F }o--|| U
+F }o--|| D
 
 entity "Result" as R {
   id : int not null <<generated>> | **PK**
@@ -72,6 +67,6 @@ note left of R::diff
 end note
 
 R }o--|| U
-R }o---|| W
+R }o--|| W
 
 @enduml
