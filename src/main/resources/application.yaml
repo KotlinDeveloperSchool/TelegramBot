@@ -6,3 +6,8 @@ spring:
     driverClassName: org.postgresql.Driver
   jpa:
     spring.jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+telegram:
+  bot:
+    token: ${BOT_TOKEN}
+    name: ${BOT_NAME}
