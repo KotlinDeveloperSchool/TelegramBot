@@ -20,7 +20,9 @@ data class User(
     @Column(name = "tg_id")
     private val telegramId: Int,
 
-    private val name: String,
+    private val username: String,
+    private val firstname: String,
+    private val lastname: String,
 
     @ManyToMany
     @JoinTable(
