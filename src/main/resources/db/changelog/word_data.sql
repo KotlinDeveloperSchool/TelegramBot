@@ -1,3 +1,7 @@
+--liquibase formatted sql
+
+--changeset dakorshik:init word data
+
 INSERT INTO public.word (id, eng, rus, dict_id) VALUES (1, 'aquamarine', 'аквамарин', 1);
 INSERT INTO public.word (id, eng, rus, dict_id) VALUES (2, 'beige', 'бежевый', 1);
 INSERT INTO public.word (id, eng, rus, dict_id) VALUES (3, 'snowy, snow-white', 'белоснежный', 1);
