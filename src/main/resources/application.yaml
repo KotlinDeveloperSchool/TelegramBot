@@ -1,13 +1,14 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/bot
+    url: jdbc:postgresql://localhost:5432/annapopova
     username: postgres
     password: postgres
     driverClassName: org.postgresql.Driver
   jpa:
     spring.jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
 
 telegram:
   bot:
-    token: ${BOT_TOKEN}
-    name: ${BOT_NAME}
+    token: 6260464483:AAGpphfGTY_LDG9x84wWm4XnQ-WudDHS2T4
+    name: WordsByHeartBot

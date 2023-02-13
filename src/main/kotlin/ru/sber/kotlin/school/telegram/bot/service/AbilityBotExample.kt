@@ -70,23 +70,16 @@ class AbilityBotExample(
             .locality(Locality.ALL)
             .privacy(Privacy.PUBLIC)
             .action { ctx ->
-                if (!userRepository.findById(ctx.chatId().toInt()).isPresent) {
-                    val chatId = ctx.chatId()
-                    val user = ru.sber.kotlin.school.telegram.bot.model.User()
-                    user.id = chatId
-                    user.userName = ctx.user().userName
-                    user.firstName = ctx.user().firstName
-                    user.lastName = ctx.user().lastName
+                if (!userRepository.findByTelegramId(ctx.user().id).isPresent) {
+                    var user = ru.sber.kotlin.school.telegram.bot.model.User(0, ctx.user().id,ctx.user().userName, ctx.user().firstName, ctx.user().lastName, listOf() )
                     userRepository.save(user)
-                }
 
-//                val data = prepareUserData(user)
-//                silent.send(data, ctx.chatId())
+                    silent.send("Nice to meet you, ${ctx.user().userName}!", ctx.chatId())
+                } else
+                silent.send("Nice to see you again, ${ctx.user().userName}!" , ctx.chatId())
             }
-            .post { ctx -> silent.send("Bye world!", ctx.chatId()) }
             .build()
     }
-
 
     /**
      * Обработка текстовых сообщений от пользователя,

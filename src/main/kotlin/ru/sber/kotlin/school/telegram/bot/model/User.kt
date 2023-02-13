@@ -12,17 +12,16 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "account")
-data class User(
+ class User(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private val id: Long,
+    @GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long = 0,
 
     @Column(name = "tg_id")
-    private val telegramId: Long,
+    private var telegramId: Long = 0 ,
 
-    private val username: String,
-    private val firstname: String,
-    private val lastname: String,
+    private var username: String = "",
+    private var firstname: String = "",
+    private var lastname: String = "",
 
     @ManyToMany
     @JoinTable(
@@ -30,5 +29,5 @@ data class User(
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "dict_id")]
     )
-    private val favorites: List<Dictionary>
+    private var favorites: List<Dictionary> = listOf()
 )
