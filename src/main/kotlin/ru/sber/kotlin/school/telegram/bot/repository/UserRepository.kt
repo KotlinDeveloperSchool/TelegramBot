@@ -7,5 +7,4 @@ import java.util.*
 
 @Repository
 interface UserRepository : JpaRepository<User, Long> {
-    fun findByTelegramId(id: Long): Optional<User>
 }

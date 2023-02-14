@@ -1,4 +1,4 @@
-package ru.sber.kotlin.school.telegram.bot
+ package ru.sber.kotlin.school.telegram.bot
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
