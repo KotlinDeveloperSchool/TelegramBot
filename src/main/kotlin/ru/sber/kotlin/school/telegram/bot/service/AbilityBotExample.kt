@@ -1,6 +1,5 @@
 package ru.sber.kotlin.school.telegram.bot.service
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.abilitybots.api.bot.AbilityBot
@@ -19,7 +18,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
+import ru.sber.kotlin.school.telegram.bot.repository.DictionaryRepository
 import ru.sber.kotlin.school.telegram.bot.repository.UserRepository
+import java.util.*
+import kotlin.collections.ArrayList
 
 @Component
 class AbilityBotExample(
@@ -27,7 +29,8 @@ class AbilityBotExample(
     private val token: String,
     @Value("\${telegram.bot.name}")
     private val name: String,
-    private var userRepository: UserRepository
+    private var userRepository: UserRepository,
+    private var dictionaryRepository: DictionaryRepository
 ) : AbilityBot(token, name) {
     override fun creatorId(): Long = 1234
 
@@ -71,14 +74,56 @@ class AbilityBotExample(
             .privacy(Privacy.PUBLIC)
             .action { ctx ->
                 if (!userRepository.findByTelegramId(ctx.user().id).isPresent) {
-                    var user = ru.sber.kotlin.school.telegram.bot.model.User(0, ctx.user().id,ctx.user().userName, ctx.user().firstName, ctx.user().lastName, listOf() )
+                    var user = ru.sber.kotlin.school.telegram.bot.model.User(
+                        0,
+                        ctx.user().id,
+                        ctx.user().userName,
+                        ctx.user().firstName,
+                        ctx.user().lastName,
+                        listOf()
+                    )
                     userRepository.save(user)
 
                     silent.send("Nice to meet you, ${ctx.user().userName}!", ctx.chatId())
                 } else
-                silent.send("Nice to see you again, ${ctx.user().userName}!" , ctx.chatId())
+                    silent.send("Nice to see you again, ${ctx.user().userName}!", ctx.chatId())
             }
             .build()
+    }
+
+    fun menu(): Ability {
+        return Ability.builder()
+            .name("menu")
+            .info("sends buttons to choose vocabulary")
+            .locality(Locality.ALL)
+            .privacy(Privacy.PUBLIC)
+            .action { ctx ->
+                sendVocabularyKeyboard(ctx.chatId().toString(), ctx.user().id);
+            }
+            .build()
+    }
+
+    fun sendVocabularyKeyboard(chatId: String, userId: Long) {
+        val message = SendMessage(chatId, "Message with inline buttons")
+
+        val inlineKeyboardMarkup = InlineKeyboardMarkup()
+        // Create the keyboard (list of InlineKeyboardButton list)
+        val keyboard: MutableList<MutableList<InlineKeyboardButton>> = ArrayList()
+        // Create a list for buttons
+        val buttons: MutableList<InlineKeyboardButton> = ArrayList()
+        // Initialize each button, the text must be written
+        val vocabulary: InlineKeyboardButton = InlineKeyboardButton("Словари")
+        // Add button to the list
+        buttons.add(vocabulary)
+        if (dictionaryRepository.findAllByOwnerId(userId).isNotEmpty()){
+            val training: InlineKeyboardButton = InlineKeyboardButton("Тренировка")
+            buttons.add(training)
+        }
+        keyboard.add(buttons)
+        inlineKeyboardMarkup.keyboard = keyboard
+        // Add it to the message
+        message.replyMarkup = inlineKeyboardMarkup
+        execute(message);
     }
 
     /**
