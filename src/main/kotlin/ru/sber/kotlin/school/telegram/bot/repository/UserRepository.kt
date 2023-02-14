@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository
 import ru.sber.kotlin.school.telegram.bot.model.User
 
 @Repository
-interface UserRepository : JpaRepository<User, Int> {
+interface UserRepository : JpaRepository<User, Long> {
 }

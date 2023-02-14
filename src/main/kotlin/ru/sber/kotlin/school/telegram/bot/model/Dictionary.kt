@@ -1,6 +1,8 @@
 package ru.sber.kotlin.school.telegram.bot.model
 
+import java.util.Collections
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
@@ -11,18 +13,17 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "dictionary")
-data class Dictionary(
+class Dictionary(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private val id: Int,
+    val id: Long = 0,
 
-    private val name: String,
+    val name: String,
 
-    @OneToMany
-    @JoinColumn(name = "dict_id")
-    private val words: List<Word>,
+    @OneToMany(mappedBy = "dic", fetch = FetchType.LAZY)
+    val words: List<Word> = Collections.emptyList(),
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
-    private val owner: User
+    val owner: User
 )
