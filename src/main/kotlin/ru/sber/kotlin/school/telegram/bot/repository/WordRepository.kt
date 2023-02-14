@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository
 import ru.sber.kotlin.school.telegram.bot.model.Word
 
 @Repository
-interface WordRepository : JpaRepository<Word, Int> {
+interface WordRepository : JpaRepository<Word, Long> {
 }

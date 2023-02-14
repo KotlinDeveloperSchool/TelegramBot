@@ -4,16 +4,22 @@ import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
 import javax.persistence.Table
 
 @Entity
 @Table(name = "word")
-data class Word(
+class Word(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private val id: Long,
+    val id: Long = 0,
 
-    private val rus: String,
+    val rus: String,
 
-    private val eng: String
+    val eng: String,
+
+    @ManyToOne
+    @JoinColumn(name = "dict_id")
+    val dic: Dictionary
 )

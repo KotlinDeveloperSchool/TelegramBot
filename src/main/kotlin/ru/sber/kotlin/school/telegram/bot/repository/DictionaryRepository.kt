@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository
 import ru.sber.kotlin.school.telegram.bot.model.Dictionary
 
 @Repository
-interface DictionaryRepository : JpaRepository<Dictionary, Int> {
+interface DictionaryRepository : JpaRepository<Dictionary, Long> {
 }

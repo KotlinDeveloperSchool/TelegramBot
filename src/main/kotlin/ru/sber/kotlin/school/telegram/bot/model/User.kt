@@ -1,9 +1,8 @@
 package ru.sber.kotlin.school.telegram.bot.model
 
-import javax.persistence.Column
+import java.util.Collections
 import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
+import javax.persistence.FetchType
 import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.JoinTable
@@ -12,23 +11,19 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "account")
-data class User(
+class User(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private val id: Long,
+    val id: Long,
 
-    @Column(name = "tg_id")
-    private val telegramId: Long,
+    val username: String,
+    val firstname: String,
+    val lastname: String,
 
-    private val username: String,
-    private val firstname: String,
-    private val lastname: String,
-
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "favorite",
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "dict_id")]
     )
-    private val favorites: List<Dictionary>
+    val favorites: List<Dictionary> = Collections.emptyList()
 )
