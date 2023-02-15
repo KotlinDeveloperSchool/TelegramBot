@@ -10,5 +10,5 @@ spring:
 
 telegram:
   bot:
-    token: 6260464483:AAGpphfGTY_LDG9x84wWm4XnQ-WudDHS2T4
-    name: WordsByHeartBot
+    token: 6073198251:AAEaYWtDEhoYdk4678XfPNaAF42OUjjjJS8
+    name: WordByHeartTestMaxBot
