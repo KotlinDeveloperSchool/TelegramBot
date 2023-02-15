@@ -2,6 +2,7 @@ package ru.sber.kotlin.school.telegram.bot.service
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import org.telegram.abilitybots.api.bot.AbilityBot
 import org.telegram.abilitybots.api.bot.BaseAbilityBot
 import org.telegram.abilitybots.api.objects.Ability
@@ -20,12 +21,19 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
+import ru.sber.kotlin.school.telegram.bot.repository.DictionaryRepository
+import ru.sber.kotlin.school.telegram.bot.repository.UserRepository
+import java.util.*
+import kotlin.collections.ArrayList
 
+@Service
 class AbilityBotExample(
     @Value("\${telegram.bot.token}")
     private val token: String,
     @Value("\${telegram.bot.name}")
-    private val name: String
+    private val name: String,
+    private var userRepository: UserRepository,
+    private var dictionaryRepository: DictionaryRepository
 ) : AbilityBot(token, name) {
     override fun creatorId(): Long = 1234
 
@@ -109,6 +117,59 @@ class AbilityBotExample(
                     ${user.isPremium} - premium
                 """.trimMargin()
 
+    fun start(): Ability {
+        return Ability.builder()
+            .name("start")
+            .info("starts bot")
+            .locality(Locality.ALL)
+            .privacy(Privacy.PUBLIC)
+            .action { ctx ->
+                if (!userRepository.findById(ctx.user().id).isPresent) {
+                    var user = ru.sber.kotlin.school.telegram.bot.model.User(
+                        ctx.user().id,
+                        ctx.user().userName,
+                        ctx.user().firstName,
+                        ctx.user().lastName,
+                        listOf()
+                    )
+                    userRepository.save(user)
+
+                    silent.send("Nice to meet you, ${ctx.user().userName}!", ctx.chatId())
+                } else
+                    silent.send("Nice to see you again, ${ctx.user().userName}!", ctx.chatId())
+            }
+            .build()
+    }
+
+    fun menu(): Ability {
+        return Ability.builder()
+            .name("menu")
+            .info("sends buttons to choose vocabulary")
+            .locality(Locality.ALL)
+            .privacy(Privacy.PUBLIC)
+            .action { ctx ->
+                sendVocabularyKeyboard(ctx.chatId().toString(), ctx.user().id);
+            }
+            .build()
+    }
+
+    fun sendVocabularyKeyboard(chatId: String, userId: Long) {
+        val message = SendMessage(chatId, "Выбери словарь или начни тренировку,если у тебя есть выбранные словари")
+
+        val keyboardMarkup = ReplyKeyboardMarkup()
+        // Create the keyboard (list of InlineKeyboardButton list)
+        val keyboard: MutableList<KeyboardRow> = ArrayList()
+        var row = KeyboardRow()
+        row.add("Словари")
+        if (dictionaryRepository.findAllByOwnerId(userId).isNotEmpty()){
+          row.add("Тренировка")
+        }
+        keyboard.add(row)
+        keyboardMarkup.keyboard = keyboard
+        // Add it to the message
+        message.replyMarkup = keyboardMarkup
+        execute(message);
+    }
 
     /**
      * Обработка текстовых сообщений от пользователя,

@@ -1,29 +1,23 @@
 package ru.sber.kotlin.school.telegram.bot.model
 
-import java.util.Collections
-import javax.persistence.Entity
-import javax.persistence.FetchType
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.JoinTable
-import javax.persistence.ManyToMany
-import javax.persistence.Table
+import java.util.*
+import javax.persistence.*
 
 @Entity
 @Table(name = "account")
-class User(
+ class User(
     @Id
-    val id: Long,
+    var id: Long = 0,
 
-    val username: String,
-    val firstname: String,
-    val lastname: String,
+    private var username: String = "",
+    private var firstname: String = "",
+    private var lastname: String = "",
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(
         name = "favorite",
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "dict_id")]
     )
-    val favorites: List<Dictionary> = Collections.emptyList()
+    private var favorites: List<Dictionary> = Collections.emptyList()
 )
