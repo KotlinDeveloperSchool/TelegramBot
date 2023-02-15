@@ -116,7 +116,16 @@ class AbilityBotExample(
                     ${user.supportInlineQueries} - queries
                     ${user.isPremium} - premium
                 """.trimMargin()
-
+    /**
+     * Создание панели Меню, которую пользователь видит в телеграме
+     * 1. Идем в @BotFather -> /mybots -> Выбираем Бота -> Edit Bot -> Edit Commands
+     * 2. Далее в формате "hello - ❗Инфо" через shift-enter с нового абзаца вносим наши команды
+     * и произвольное описание
+     * 3.Результат должен быть - "Success! Command list updated. /help"
+     * ВАЖНО!!! Меню вы увидите только после полной перезагрузки страницы, далее оно будет отображаться постоянно
+     *
+     * Переименовать такое меню нельзя, если мы хотим свое название меню, то необходимо формировать URL-команду.
+     */
     fun start(): Ability {
         return Ability.builder()
             .name("start")
@@ -162,7 +171,7 @@ class AbilityBotExample(
         var row = KeyboardRow()
         row.add("Словари")
         if (dictionaryRepository.findAllByOwnerId(userId).isNotEmpty()){
-          row.add("Тренировка")
+            row.add("Тренировка")
         }
         keyboard.add(row)
         keyboardMarkup.keyboard = keyboard
@@ -247,15 +256,15 @@ class AbilityBotExample(
      * Команда /inlBtn отправляет пользователю кнопки под сообщением
      */
     fun drawInlineButtons(): Ability = Ability.builder()
-            .name("inl")
-            .info("Get keyboardButtons")
-            .locality(Locality.USER)
-            .privacy(Privacy.PUBLIC)
-            .action { ctx ->
-                val msg = sendInlineKeyboard(ctx.chatId().toString())
-                sender.execute(msg)
-            }
-            .build()
+        .name("inl")
+        .info("Get keyboardButtons")
+        .locality(Locality.USER)
+        .privacy(Privacy.PUBLIC)
+        .action { ctx ->
+            val msg = sendInlineKeyboard(ctx.chatId().toString())
+            sender.execute(msg)
+        }
+        .build()
 
     fun sendInlineKeyboard(chatId: String): SendMessage {
         val message = SendMessage(chatId, "Message with inline buttons")
