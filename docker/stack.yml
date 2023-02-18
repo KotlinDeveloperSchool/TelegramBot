@@ -25,3 +25,15 @@ services:
     restart: always
     ports:
       - 8081:8080
+
+  redis:
+    image: redis:alpine
+    command: redis-server --requirepass redis
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - ../redisdata:/var/lib/redis
+      - ./redis.config:/usr/local/etc/redis/redis.config
+    environment:
+      - REDIS_REPLICATION_MODE=master
