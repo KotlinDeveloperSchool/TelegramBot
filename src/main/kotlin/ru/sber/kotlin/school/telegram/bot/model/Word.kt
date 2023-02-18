@@ -11,17 +11,17 @@ import javax.persistence.Table
 @Entity
 @Table(name = "word")
 class Word(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
-
     val rus: String,
 
     val eng: String,
 
     @ManyToOne
     @JoinColumn(name = "dict_id")
-    val dic: Dictionary
+    val dic: Dictionary,
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long = 0
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

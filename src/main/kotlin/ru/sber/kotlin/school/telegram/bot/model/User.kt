@@ -12,9 +12,6 @@ import javax.persistence.Table
 @Entity
 @Table(name = "account")
 class User(
-    @Id
-    val id: Long,
-
     val username: String,
     val firstname: String,
     val lastname: String,
@@ -25,5 +22,8 @@ class User(
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "dict_id")]
     )
-    val favorites: List<Dictionary> = Collections.emptyList()
+    val favorites: List<Dictionary> = Collections.emptyList(),
+
+    @Id
+    val id: Long = 0
 )
