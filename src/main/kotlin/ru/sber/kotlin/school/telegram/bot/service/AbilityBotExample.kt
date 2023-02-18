@@ -1,13 +1,15 @@
 package ru.sber.kotlin.school.telegram.bot.service
 
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
 import org.telegram.abilitybots.api.bot.AbilityBot
 import org.telegram.abilitybots.api.bot.BaseAbilityBot
 import org.telegram.abilitybots.api.objects.Ability
 import org.telegram.abilitybots.api.objects.Locality
 import org.telegram.abilitybots.api.objects.Privacy
 import org.telegram.abilitybots.api.objects.Reply
+import org.telegram.abilitybots.api.objects.ReplyFlow
+import org.telegram.abilitybots.api.objects.ReplyFlow.ReplyFlowBuilder
+import org.telegram.abilitybots.api.util.AbilityUtils.getChatId
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -20,14 +22,97 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
+import ru.sber.kotlin.school.telegram.bot.repository.BotRedisRepository
+import ru.sber.kotlin.school.telegram.bot.util.CustomSender
+import ru.sber.kotlin.school.telegram.bot.util.Predicates
+import java.util.function.BiConsumer
+import java.util.function.Predicate
 
+//@Component
 class AbilityBotExample(
     @Value("\${telegram.bot.token}")
     private val token: String,
     @Value("\${telegram.bot.name}")
-    private val name: String
+    private val name: String,
+    private val predicates: Predicates,
+    private val botRedisRepository: BotRedisRepository
 ) : AbilityBot(token, name) {
-    override fun creatorId(): Long = 1234
+    private val customSender = CustomSender(sender, silent, botRedisRepository)
+    private val MAIN_MENU = 1
+    private val TRAINING_MENU = 2
+    private val DICS_MENU = 3
+    private val EMPTY_MENU = 4
+
+    /**
+     * Реализация "машины состояний" - ограничение действий в зависимости от текущего этапа
+     * Порядок вызова: первым - prepareFlow(), последним buildFlow(),
+     * nextFlows() необязательный промежуточный
+     */
+    @Deprecated(message = "Реализовал самостоятельно в CustomSender.Router")
+    fun getFlow(): ReplyFlow {
+        val end = Reply.of(
+            customSender.sendText("Вы дошли до конца"),
+            predicates.isCommand("end")
+        )
+        val trainFlow = prepareFlow(TRAINING_MENU)
+            .nextFlows(end)
+            .buildFlow(
+                customSender.sendText("Вы попали в меню тренировки"),
+                predicates.isCommand("train")
+            )
+
+        val dicsFlow = prepareFlow(DICS_MENU)
+            .nextFlows(end)
+            .buildFlow(
+                customSender.sendText("Вы попали в меню словарей"),
+                predicates.isCommand("dics")
+            )
+
+        val emptyFlow = prepareFlow(TRAINING_MENU)
+            .buildFlow(
+                customSender.sendText("Вы попали в пустое меню"),
+                predicates.isCommand("empty")
+            )
+
+        return prepareFlow(MAIN_MENU)
+            .nextFlows(trainFlow, dicsFlow, emptyFlow)
+            .buildFlow(
+                customSender.sendText("Вы попали в главное меню"),
+                predicates.isCommand("menu")
+            )
+    }
+
+    /**
+     * Создаёт объект FlowBuilder, может иметь идентификатор этапа, в противном
+     * случае будет сгенерирован ботом автоматически
+     */
+    private fun prepareFlow(id: Int? = null): ReplyFlowBuilder =
+        if (id == null) ReplyFlow.builder(db)
+        else ReplyFlow.builder(db, id)
+
+    /**
+     * Добавляет в FlowBuilder следующие доступные этапы
+     */
+    private fun ReplyFlowBuilder.nextFlows(vararg replies: Reply): ReplyFlowBuilder {
+        replies.forEach {
+            if (it is ReplyFlow) this.next(it)
+            else this.next(it)
+        }
+        return this
+    }
+
+    /**
+     * Добавляет во FlowBuilder действие и условие для исполнения, после этого возвращает сам Flow
+     */
+    private fun ReplyFlowBuilder.buildFlow(
+        act: BiConsumer<BaseAbilityBot, Update>,
+        pred: Predicate<Update>
+    ): ReplyFlow =
+        this.action(act)
+            .onlyIf(pred)
+            .build()
+
+    override fun creatorId(): Long = 399762912
 
     /**
      * Создание списков в режиме inline, для перехода в режим нужно:
@@ -38,7 +123,7 @@ class AbilityBotExample(
      */
     fun echoInlineReply(): Reply {
         val action: (BaseAbilityBot, Update) -> Unit = { _, upd ->
-            val answer = processInline(upd)
+            val answer = SendMessage(getChatId(upd).toString(), upd.callbackQuery.data)
             sender.execute(answer)
         }
         return Reply.of(action, isInlineQuery())
@@ -48,7 +133,7 @@ class AbilityBotExample(
      * Так можно выполнять фильтрацию по инлайн командам
      */
     private fun isInlineQuery(): (Update) -> Boolean = { upd: Update ->
-        upd.hasInlineQuery() && upd.inlineQuery.query == "toInline"
+        upd.hasCallbackQuery()
     }
 
     fun processInline(upd: Update): AnswerInlineQuery {
@@ -186,15 +271,15 @@ class AbilityBotExample(
      * Команда /inlBtn отправляет пользователю кнопки под сообщением
      */
     fun drawInlineButtons(): Ability = Ability.builder()
-            .name("inl")
-            .info("Get keyboardButtons")
-            .locality(Locality.USER)
-            .privacy(Privacy.PUBLIC)
-            .action { ctx ->
-                val msg = sendInlineKeyboard(ctx.chatId().toString())
-                sender.execute(msg)
-            }
-            .build()
+        .name("inl")
+        .info("Get keyboardButtons")
+        .locality(Locality.USER)
+        .privacy(Privacy.PUBLIC)
+        .action { ctx ->
+            val msg = sendInlineKeyboard(ctx.chatId().toString())
+            sender.execute(msg)
+        }
+        .build()
 
     fun sendInlineKeyboard(chatId: String): SendMessage {
         val message = SendMessage(chatId, "Message with inline buttons")

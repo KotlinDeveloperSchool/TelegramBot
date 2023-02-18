@@ -6,6 +6,13 @@ spring:
     driverClassName: org.postgresql.Driver
   jpa:
     spring.jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+  redis:
+    database: 0
+    host: localhost
+    port: 6379
+    password: redis
+    timeout: 60000
 
 telegram:
   bot:
