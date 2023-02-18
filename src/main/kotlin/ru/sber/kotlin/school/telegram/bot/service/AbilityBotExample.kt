@@ -23,6 +23,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 import ru.sber.kotlin.school.telegram.bot.repository.BotRedisRepository
+import ru.sber.kotlin.school.telegram.bot.service.dictionary.DictionaryMessage
+import ru.sber.kotlin.school.telegram.bot.service.dictionary.DictionaryService
 import ru.sber.kotlin.school.telegram.bot.util.CustomSender
 import ru.sber.kotlin.school.telegram.bot.util.Predicates
 import java.util.function.BiConsumer
@@ -35,7 +37,8 @@ class AbilityBotExample(
     @Value("\${telegram.bot.name}")
     private val name: String,
     private val predicates: Predicates,
-    private val botRedisRepository: BotRedisRepository
+    private val botRedisRepository: BotRedisRepository,
+    val dictionaryService: DictionaryService
 ) : AbilityBot(token, name) {
     private val customSender = CustomSender(sender, silent, botRedisRepository)
     private val MAIN_MENU = 1
@@ -265,6 +268,51 @@ class AbilityBotExample(
         message.replyMarkup = keyboardMarkup
 
         return message
+    }
+
+    /**
+     * Команда /create отправляет пользователю кнопки в районе клавиатуры
+     */
+    fun createDictionary(): Ability {
+        return Ability.builder()
+            .name("create")
+            .info("Create dictionary")
+            .locality(Locality.USER)
+            .privacy(Privacy.PUBLIC)
+            .action { ctx ->
+                val msg = dictionaryService.sendCreateDictionaryMsg(ctx.chatId().toString())
+                sender.execute(msg)
+            }
+            .build()
+    }
+
+    fun buttonCreateNameDictionaries(): Reply {
+        val action: (BaseAbilityBot, Update) -> Unit = { _, upd ->
+            val answer = SendMessage(upd.message.chatId.toString(),
+                DictionaryMessage.NEW_DICTIONARY.message)
+            answer.replyMarkup = ReplyKeyboardRemove(true)
+            sender.execute(answer)
+            //переход в стейт CREATE_DICTIONARY
+        }
+
+        return Reply.of(action, isQueryCreateDictionary())
+    }
+
+    private fun isQueryCreateDictionary(): (Update) -> Boolean = { upd: Update ->
+        upd.message.text == DictionaryMessage.CREATE.message
+    }
+
+    fun createDictionaryTemp(): Ability {
+        return Ability.builder()
+            .name("namedic")
+            .info("Get keyboardButtons")
+            .locality(Locality.USER)
+            .privacy(Privacy.PUBLIC)
+            .action { ctx ->
+                dictionaryService.createNewDictionary(ctx.update(), "Пробник", 0)
+                sender.execute(SendMessage(ctx.chatId().toString(), "Пробник"))
+            }
+            .build()
     }
 
     /**

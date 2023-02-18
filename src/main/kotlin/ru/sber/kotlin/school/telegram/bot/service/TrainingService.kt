@@ -71,7 +71,7 @@ class TrainingService(
         val query = upd.inlineQuery
 
         val user: User = userRepository.findById(1)
-            .orElse(User(1, "admin", "admin", "admin"))
+            .orElse(User("admin", "admin", "admin", mutableListOf()))
         val results = user.favorites
             .map { prepareDictArticle(it) }
             .ifEmpty { listOf(prepareDictArticle(Dictionary(name = "Нет словарей", owner = user))) }
