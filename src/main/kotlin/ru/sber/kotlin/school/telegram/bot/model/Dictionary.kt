@@ -20,7 +20,7 @@ class Dictionary(
 
     val name: String,
 
-    @OneToMany(mappedBy = "dic", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "dict", fetch = FetchType.LAZY)
     val words: List<Word> = Collections.emptyList(),
 
     @OneToOne(fetch = FetchType.LAZY)

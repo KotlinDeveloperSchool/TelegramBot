@@ -21,5 +21,5 @@ class Word(
 
     @ManyToOne
     @JoinColumn(name = "dict_id")
-    val dic: Dictionary
+    val dict: Dictionary
 )

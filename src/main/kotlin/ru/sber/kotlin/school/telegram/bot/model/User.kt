@@ -7,17 +7,18 @@ import javax.persistence.*
 @Table(name = "account")
  class User(
     @Id
-    var id: Long = 0,
+    var id: Long,
 
-    private var username: String = "",
-    private var firstname: String = "",
-    private var lastname: String = "",
+    val username: String,
+    val firstname: String,
+    val lastname: String,
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "favorite",
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "dict_id")]
     )
+    //требуется изменяемая коллекция для записи
     private var favorites: List<Dictionary> = Collections.emptyList()
 )
