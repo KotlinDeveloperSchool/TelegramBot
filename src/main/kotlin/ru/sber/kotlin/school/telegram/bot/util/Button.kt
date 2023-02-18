@@ -4,6 +4,7 @@ enum class Button(
     val text: String
 ) {
     GotItLetsGo("Ясно, приступим!"),
+    ShowWordsFromDic("Покажи, что в словаре!"),
     OkNext("Ок, давай дальше!");
 
     companion object {

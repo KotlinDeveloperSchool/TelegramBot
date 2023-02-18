@@ -7,10 +7,12 @@ import org.telegram.abilitybots.api.sender.SilentSender
 import org.telegram.abilitybots.api.util.AbilityUtils.getChatId
 import org.telegram.abilitybots.api.util.AbilityUtils.getUser
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import ru.sber.kotlin.school.telegram.bot.repository.BotRedisRepository
 import java.io.Serializable
 
@@ -47,11 +49,15 @@ class CustomSender(
         sender.execute(answer)
     }
 
+    fun <T : Serializable> action(action: (Update) -> BotApiMethod<T>) =
+        Router(action)
+
     inner class Router<T : Serializable>(
         private val action: (Update) -> BotApiMethod<T>
     ) {
         private var state: State? = null
         private var clearMarkup: String? = null
+        private var deleteKeyboard: String? = null
         private var saveBotMsg = false
         private var saveUserMsg = false
         private var deleteBotMsg = false
@@ -61,6 +67,7 @@ class CustomSender(
         fun toState(state: State) = apply { this.state = state }
 
         fun clearMarkup(newText: String) = apply { this.clearMarkup = newText }
+        fun deleteKeyboard(newText: String) = apply { this.deleteKeyboard = newText }
 
         fun botMsg() = apply { this.saveBotMsg = true }
 
@@ -87,15 +94,17 @@ class CustomSender(
                 val userId = getUser(upd).id
                 val chatId = getChatId(upd).toString()
 
+                deleteKeyboard?.let { deleteKeyboard(chatId, it) }
+
                 if (saveUserMsg && upd.hasMessage())
                     botRedisRepository.putUserMsg(userId, upd.message.messageId)
 
-                if (state != null) botRedisRepository.putState(userId, state as State)
+                state?.let { botRedisRepository.putState(userId, state as State) }
 
                 if (deleteBotMsg) deleteBotMsg(userId, chatId)
                 if (deleteUserMsg) deleteUserMsg(userId, chatId)
-                if (clearMarkup != null) clearMarkup(userId, chatId)
-                if (msgText != null) updateBotMsg(userId, chatId)
+                clearMarkup?.let { clearMarkup(userId, chatId) }
+                msgText?.let { updateBotMsg(userId, chatId) }
 
                 val answer = action.invoke(upd)
 
@@ -118,6 +127,15 @@ class CustomSender(
                 sender.execute(editMsg)
                 botRedisRepository.deleteBotMsg(userId)
             }
+        }
+
+        private fun deleteKeyboard(chatId: String, text: String) {
+            val removeKeyboard = SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .replyMarkup(ReplyKeyboardRemove(true))
+                .build()
+            sender.execute(removeKeyboard)
         }
 
         private fun updateBotMsg(userId: Long, chatId: String) {

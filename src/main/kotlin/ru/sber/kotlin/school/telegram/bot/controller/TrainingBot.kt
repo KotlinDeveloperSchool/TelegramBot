@@ -39,7 +39,7 @@ class TrainingBot(
     override fun creatorId(): Long = 399762912
 
     fun showAll(): Reply = Reply.of(
-        customSender.Router(trainingService::getAllFromRedis)
+        customSender.action(trainingService::getAllFromRedis)
             .send(),
         predicates.isCommand("all")
     )
@@ -49,14 +49,15 @@ class TrainingBot(
         .info("Get main menu")
         .locality(Locality.USER)
         .privacy(Privacy.PUBLIC)
-        .action(customSender.Router(trainingService::mainMenu)
+        .action(customSender.action(trainingService::mainMenu)
             .toState(State.Main)
+            .deleteKeyboard("Переходим в главное меню!")
             .botMsg()
             .sendCtx())
         .build()
 
     fun showFavoriteDicts(): Reply = Reply.of(
-        customSender.Router(trainingService::getFavorites)
+        customSender.action(trainingService::getFavorites)
             .toState(State.Preparation)
             .clearMarkup("Выберите словарь для тренировки")
             .send(),
@@ -65,7 +66,7 @@ class TrainingBot(
     )
 
     fun showGameStyles(): Reply = Reply.of(
-        customSender.Router(trainingService::getGameStyles)
+        customSender.action(trainingService::getGameStyles)
             .toState(State.GameStyle)
             .send(),
         predicates.checkState(State.Preparation)
@@ -73,24 +74,33 @@ class TrainingBot(
     )
 
     fun prepareForGame(): Reply = Reply.of(
-        customSender.Router(trainingService::prepareGame)
+        customSender.action(trainingService::prepareGame)
             .toState(State.BeforeGame)
             .send(),
         predicates.checkState(State.GameStyle)
             .and(predicates.oneOfTitles(GameStyle.titlesSet()))
     )
 
+    fun showWordsForLearning(): Reply = Reply.of(
+        customSender.action(trainingService::showWords)
+            .toState(State.WordReminder)
+            .botMsg()
+            .send(),
+        predicates.checkState(State.BeforeGame)
+            .and(predicates.hasExactText(Button.ShowWordsFromDic.text))
+    )
+
     fun startGame(): Reply = Reply.of(
-        customSender.Router(trainingService::gameRound)
+        customSender.action(trainingService::gameRound)
             .toState(State.Game)
             .deleteBotMsg()
             .send(),
-        predicates.checkState(State.BeforeGame)
-            .and(predicates.hasExactText("Ясно, приступим!"))
+        (predicates.checkState(State.BeforeGame).or(predicates.checkState(State.WordReminder)))
+            .and(predicates.hasExactText(Button.GotItLetsGo.text))
     )
 
     fun processAnswer(): Reply = Reply.of(
-        customSender.Router(trainingService::gameAnswer)
+        customSender.action(trainingService::gameAnswer)
             .toState(State.Answer)
             .userMsg()
             .botMsg()
@@ -100,13 +110,13 @@ class TrainingBot(
     )
 
     fun resumeGame(): Reply = Reply.of(
-        customSender.Router(trainingService::gameRound)
+        customSender.action(trainingService::gameRound)
             .toState(State.Game)
             .deleteBotMsg()
             .deleteUserMsg()
             .send(),
         predicates.checkState(State.Answer)
-            .and(predicates.hasExactText("Ок, давай дальше!"))
+            .and(predicates.hasExactText(Button.OkNext.text))
     )
 
 }

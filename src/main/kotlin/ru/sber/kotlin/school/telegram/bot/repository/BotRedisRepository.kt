@@ -40,6 +40,12 @@ class BotRedisRepository(
     fun rightPopMsg(userId: Long): String? =
         redisTemplate.opsForList().rightPop(getQueueName(userId))
 
+    fun popAndPushBack(userId: Long): String? {
+        val queue = getQueueName(userId)
+        return redisTemplate.opsForList().rightPopAndLeftPush(queue, queue)
+    }
+
+
     fun getDictionary(userId: Long): String? =
         redisTemplate.opsForHash<String, String>().get(GAME_DICS_KEY, userId.toString())
 

@@ -14,4 +14,6 @@ interface WordRepository : JpaRepository<Word, Long> {
         nativeQuery = true
     )
     fun findAllByDictionaryId(@Param("dictId") dictionaryId: Long): List<Word>
+
+    fun findAllByIdIn(ids: ArrayList<Long>): List<Word>
 }

@@ -10,7 +10,6 @@ import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessageconten
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
@@ -99,7 +98,6 @@ class TrainingService(
         .text("Теперь выберите режим изучения")
         .replyMarkup(
             ReplyKeyboardMarkup.builder()
-                .oneTimeKeyboard(true)
                 .isPersistent(true)
                 .keyboard(
                     GameStyle.values()
@@ -118,10 +116,12 @@ class TrainingService(
         .text(GameStyle.getDescription(upd))
         .replyMarkup(
             ReplyKeyboardMarkup.builder()
-                .oneTimeKeyboard(true)
                 .isPersistent(true)
                 .keyboard(
-                    listOf(KeyboardRow(listOf(KeyboardButton(Button.GotItLetsGo.text))))
+                    listOf(
+                        KeyboardRow(listOf(KeyboardButton(Button.GotItLetsGo.text))),
+                        KeyboardRow(listOf(KeyboardButton(Button.ShowWordsFromDic.text)))
+                    )
                 ).build()
         )
         .build().also {
@@ -132,12 +132,31 @@ class TrainingService(
             gameSelector.getGameService(gameStyle).prepare(userId)
         }
 
+    fun showWords(upd: Update): SendMessage = SendMessage.builder()
+        .chatId(getChatId(upd))
+        .text(getUser(upd).id.let {
+            gameSelector.getGameService(it).getWordsForLearning(it)
+        })
+        .replyMarkup(
+            ReplyKeyboardMarkup.builder()
+                .isPersistent(true)
+                .keyboard(
+                    listOf(
+                        KeyboardRow(listOf(KeyboardButton(Button.GotItLetsGo.text)))
+                    )
+                ).build()
+        )
+        .build()
+
+
     fun gameRound(upd: Update): SendMessage = SendMessage.builder()
         .chatId(getChatId(upd))
         .text(getUser(upd).id.let {
-            gameSelector.getGameService(it).startRound(it)
+            gameSelector.getGameService(it).getTextForRound(it)
         })
-        .replyMarkup(ReplyKeyboardRemove(true))
+        .replyMarkup(getUser(upd).id.let {
+            gameSelector.getGameService(it).getKeyboardForRound(it)
+        })
         .build()
 
 
@@ -148,7 +167,6 @@ class TrainingService(
         )
         .replyMarkup(
             ReplyKeyboardMarkup.builder()
-                .oneTimeKeyboard(true)
                 .isPersistent(true)
                 .keyboard(
                     listOf(KeyboardRow(listOf(KeyboardButton(Button.OkNext.text))))

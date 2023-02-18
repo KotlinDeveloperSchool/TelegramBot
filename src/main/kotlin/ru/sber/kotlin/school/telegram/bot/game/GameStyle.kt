@@ -17,6 +17,7 @@ enum class GameStyle(
     );
 
     fun title() = title
+    fun desc() = description
 
     companion object {
         private val map = GameStyle.values().associateBy { it.title }
