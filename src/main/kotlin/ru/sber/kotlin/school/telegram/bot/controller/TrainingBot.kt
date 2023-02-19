@@ -30,7 +30,7 @@ class TrainingBot(
     private val botRedisRepository: BotRedisRepository
 ) : AbilityBot(token, name, BareboneToggle()) {
 
-    private val customSender: CustomSender = CustomSender(
+     var customSender: CustomSender = CustomSender(
         this.sender,
         this.silent,
         botRedisRepository

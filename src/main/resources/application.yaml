@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/bot
+    url: jdbc:postgresql://localhost:5432/template1
     username: postgres
     password: postgres
     driverClassName: org.postgresql.Driver
@@ -16,5 +16,5 @@ spring:
 
 telegram:
   bot:
-    token: ${BOT_TOKEN}
-    name: ${BOT_NAME}
+    token: 6075495599:AAFrXSv3DerEikjjbSCu44f0igVl3wrLOFo
+    name: TestikNesticBot
