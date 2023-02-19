@@ -1,5 +1,7 @@
 package ru.sber.kotlin.school.telegram.bot;
 
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +25,13 @@ import ru.sber.kotlin.school.telegram.bot.service.TrainingService;
 import ru.sber.kotlin.school.telegram.bot.util.CustomSender;
 import ru.sber.kotlin.school.telegram.bot.util.Predicates;
 
+import java.io.IOException;
+
+import static java.lang.String.format;
 import static org.mockito.Mockito.*;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
+import static org.telegram.abilitybots.api.db.MapDBContext.offlineInstance;
+import static ru.sber.kotlin.school.telegram.bot.TestUtils.mockFullUpdate;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
@@ -54,38 +62,34 @@ public class TrainingTest {
     GameSelector gameSelector;
     @Autowired
     private Predicates predicates;
-    private DBContext db;
+    private static DBContext db;
 
-    @BeforeEach
+  @BeforeEach
     void setUp() {
-//        db = offlineInstance("db");
-        bot = new TrainingBot(TOKEN, NAME, trainingService, predicates, botRedisRepository);
-        bot.onRegister();
-        silent = mock(SilentSender.class);
-        sender = mock(MessageSender.class);
-        bot.setCustomSender(new CustomSender(sender, silent, botRedisRepository));
-        when(trainingService.getAllFromRedis(Mockito.any())).thenReturn(new SendMessage(CHAT_ID_STRING, "getAllFromRedis"));
-        when(trainingService.getGameStyles(Mockito.any())).thenReturn(new SendMessage(CHAT_ID_STRING, "getGameStyles"));
+      db = offlineInstance("test");
+      bot = new TrainingBot(TOKEN, NAME, trainingService, predicates, botRedisRepository);
+      bot.onRegister();
+
+      silent = mock(SilentSender.class);
+      sender = mock(MessageSender.class);
+      bot.setCustomSender(new CustomSender(sender, silent, botRedisRepository));
+
+      when(trainingService.getAllFromRedis(Mockito.any())).thenReturn(new SendMessage(CHAT_ID_STRING, "getAllFromRedis"));
+      when(trainingService.getGameStyles(Mockito.any())).thenReturn(new SendMessage(CHAT_ID_STRING, "getGameStyles"));
     }
 
     @Test
-    public void canSayHelloWorld() {
-        Update upd = new Update();
-        upd.getMessage().getFrom().setId(CHAT_ID);
+    public void test() {
 
-
-        // Create a new User - User is a class similar to Telegram User
-        User user = new User();
-        // This is the context that you're used to, it is the necessary conumer item for the ability
-        // MessageContext context = MessageContext.newContext(upd, user, CHAT_ID);
-
-        // We consume a context in the lamda declaration, so we pass the context to the action logic
-        bot.showFavoriteDicts().action().accept(bot, upd);
-
-        // We verify that the silent sender was called only ONCE and sent Hello World to CHAT_ID
-        // The silent sender here is a mock!
-        Mockito.verify(silent, times(1)).send("Hello World!", CHAT_ID);
+        Update update = mockFullUpdate(bot, USER, "/menu");
+        bot.onUpdateReceived(update);
+        verify(silent, times(1)).send(format("Sorry, this feature requires %d additional inputs.", 4), USER.getId());
     }
 
+    @AfterEach
+    public void tearDown() throws IOException {
+        db.clear();
+        db.close();
+    }
 
 }
