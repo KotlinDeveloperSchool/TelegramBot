@@ -18,12 +18,13 @@ class FreeTypeGameService(
 ) : GameService {
     private val DELIMITER = "#"
     private val PAIR_TEMPLATE = "%d$DELIMITER%s$DELIMITER%s"
+    private val WORD_COUNT = 5
 
     override fun prepare(userId: Long) {
         val dictionaryId = (botRedisRepository.getDictionary(userId)
             ?: throw ActionException("No chosen dictionary by user $userId")).toLong()
         val allWords = wordRepository.findAllByDictionaryId(dictionaryId)
-        val wordsToLearn = getRandomWords(3, allWords)
+        val wordsToLearn = getRandomWords(WORD_COUNT, allWords)
 
         wordsToLearn.forEach {
             if (Random.nextInt(2) == 0)

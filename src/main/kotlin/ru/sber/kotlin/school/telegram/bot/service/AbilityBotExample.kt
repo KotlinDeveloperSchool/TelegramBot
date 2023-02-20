@@ -11,9 +11,12 @@ import org.telegram.abilitybots.api.objects.ReplyFlow
 import org.telegram.abilitybots.api.objects.ReplyFlow.ReplyFlowBuilder
 import org.telegram.abilitybots.api.util.AbilityUtils.getChatId
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery
+import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.User
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeChat
 import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle
@@ -34,6 +37,8 @@ class AbilityBotExample(
     private val token: String,
     @Value("\${telegram.bot.name}")
     private val name: String,
+    val dictionaryMenuService: DictionaryMenuService,
+    val dictionaryService: DictionaryService,
     private val predicates: Predicates,
     private val botRedisRepository: BotRedisRepository
 ) : AbilityBot(token, name) {
@@ -159,7 +164,6 @@ class AbilityBotExample(
             .switchPmParameter("dict")
             .results(results)
             .build()
-
     }
 
     /**
@@ -219,7 +223,7 @@ class AbilityBotExample(
     }
 
     /**
-     * Команда /keyBtn отправляет пользователю кнопки в районе клавиатуры
+     * Команда /keys отправляет пользователю кнопки в районе клавиатуры
      */
     fun drawKeyboardButtons(): Ability {
         return Ability.builder()
@@ -311,6 +315,140 @@ class AbilityBotExample(
         message.replyMarkup = inlineKeyboardMarkup
 
         return message
+    }
+
+    /**
+     * Команда /scr возвращает список меню
+     * (пока для отображения меню требуется перезагрузить страницу) - DRAFT
+     */
+    fun menuButtons() : Ability = Ability.builder()
+        .name("scr")
+        .info("Get scrollMenuButtons")
+        .locality(Locality.USER)
+        .privacy(Privacy.PUBLIC)
+        .action { ctx ->
+            //sendMenuButton(ctx.chatId().toString())
+            val msg = sendMenuButton(ctx.chatId().toString())
+            sender.execute(msg)
+        }
+        .build()
+
+    fun sendMenuButton(chatId: String) : SetMyCommands {
+        val message = SendMessage(chatId, "Message with menu button")
+        val list = ArrayList<BotCommand>()
+        list.add(BotCommand("/hello","user data"))
+        list.add(BotCommand("/inl","user data"))
+        //list.add(BotCommand("/keys","user data"))
+        //sender.execute(SetMyCommands(list, BotCommandScopeChat(chatId),null))
+        execute(message)
+        return SetMyCommands(list, BotCommandScopeChat(chatId),null)
+    }
+
+    /*НАЧИНАТЬ СМОТРЕТЬ ЭТОТ КЛАСС КОНТРОЛЛЕРА ОТСЮДА И НИЖЕ (если по replyMessage подход согласовываем как ниже то, часть функции в отдельную можно вынести)*/
+
+    /**
+     * Команда /dict_menu возвращает клавиатурное меню
+     * и список словарей на изучении
+     */
+//    fun dictionaryMenu() : Ability = Ability.builder()
+//        .name("dict_menu")
+//        .info("Получаем меню в зоне текста и список словарей на изучении")
+//        .locality(Locality.USER)
+//        .privacy(Privacy.PUBLIC)
+//        .action { ctx ->
+//            val msg = dictionaryMenuService.getDictMenuAndInfoFavDict(ctx)
+//            sender.execute(msg)
+//        }
+//        .build()
+
+    /**
+     * Команда inlineQuery {allDictionaries} отправляет пользователю развернутый список всех словарей (при нажатии Добавить из готовых)
+     */
+
+//    fun inlineReplyListDictionaries(): Reply {
+//        val action: (BaseAbilityBot, Update) -> Unit = { _, upd ->
+//            //здесь получение списка всех словарей
+//            val partOfMessageText = "добавлен в словари"
+////            val answer = additionAndDeleterMenusToFavoriteDictionariesService.getMenuAllDictionaries(upd, partOfMessageText)
+//            sender.execute(answer)
+//        }
+//        return Reply.of(action, isInlineQueryAllDictionaries())
+//    }
+
+    private fun isInlineQueryAllDictionaries(): (Update) -> Boolean = { upd: Update ->
+        upd.hasInlineQuery() && upd.inlineQuery.query == "allDictionaries"
+    }
+
+    //ловим ответ пользователя по словарю, который надо добавить на изучение
+    fun replyMessageAdditionDictionaryToFavorites(): Reply {
+        val action: (BaseAbilityBot, Update) -> Unit = { _, upd ->
+            //здесь добавление словаря в словари на изучении
+//            additionAndDeleterMenusToFavoriteDictionariesService.addDictionaryToFavorites(upd)
+        }
+        return Reply.of(action, isAdditionDictionaryToFavorites())
+    }
+
+    private fun isAdditionDictionaryToFavorites(): (Update) -> Boolean = { upd: Update ->
+        upd.hasMessage() && upd.message.hasText() && upd.message.text.endsWith("добавлен в словари для изучения")
+    }
+
+    /**
+     * Команда inlineQuery {allFavDictionaries} отправляет пользователю развернутый список всех словарей (при нажатии Удалить словарь из списка изучаемых)
+     */
+//    fun inlineReplyListFavDictionaries(): Reply {
+//        val action: (BaseAbilityBot, Update) -> Unit = { _, upd ->
+//            //здесь получение списка всех словарей
+//            val partOfMessageText = "удален из словарей"
+//            val answer = additionAndDeleterMenusToFavoriteDictionariesService.getMenuAllDictionaries(upd, partOfMessageText)
+//            sender.execute(answer)
+//        }
+//        return Reply.of(action, isInlineQueryAllFavDictionaries())
+//    }
+
+    private fun isInlineQueryAllFavDictionaries(): (Update) -> Boolean = { upd: Update ->
+        upd.hasInlineQuery() && upd.inlineQuery.query == "allFavDictionaries"
+    }
+
+    //ловим ответ пользователя по словарю, который надо удалить из изучения
+    fun replyMessageDeleterDictionaryFromFavorites(): Reply {
+        val action: (BaseAbilityBot, Update) -> Unit = { _, upd ->
+            //здесь удаление словаря из словарей на изучении
+//            additionAndDeleterMenusToFavoriteDictionariesService.deleteDictionaryFromFavorites(upd)
+        }
+        return Reply.of(action, isDeleterDictionaryFromFavorites())
+    }
+
+    private fun isDeleterDictionaryFromFavorites(): (Update) -> Boolean = { upd: Update ->
+        upd.hasMessage() && upd.message.hasText() && upd.message.text.endsWith("удален из словарей для изучения")
+    }
+
+    /*override fun onUpdateReceived(update: Update?) {
+        super.onUpdateReceived(update)
+        if(update?.callbackQuery?.data == "temporary"){
+            val chatId = update.callbackQuery.message.chat.id.toString()
+            sender.execute(SendMessage(chatId,
+                "Временно, далее здесь методы перехода в меню или указания на создание темы нового словаря " +
+                        "(можно ввод пользователем темы сделать через inlinequery как в примере с fails - " +
+                        "вываливается fails (переименованный типо после двоеточия введите тему словаря: ) " +
+                        "и пользователь вводит тему и и направляет весь этот кусок в чат)"))
+        }
+    }*/
+
+    fun inlineReplyTemporary(): Reply {
+        val action: (BaseAbilityBot, Update) -> Unit = { _, upd ->
+            //временная затычка
+            sender.execute(SendMessage(
+                getChatId(upd).toString(),
+                "Временно, далее здесь методы перехода в меню или указания на создание темы нового словаря " +
+                        "(можно ввод пользователем темы сделать через inlinequery как в примере с fails - " +
+                        "вываливается fails (переименованный типо после двоеточия введите тему словаря: ) " +
+                        "и пользователь вводит тему и и направляет весь этот кусок в чат)"))
+        }
+        return Reply.of(action, isInlineQueryTemporary())
+    }
+
+    private fun isInlineQueryTemporary(): (Update) -> Boolean = { upd: Update ->
+        upd.hasCallbackQuery() && upd.callbackQuery.data == "temporary"
     }
 
 }

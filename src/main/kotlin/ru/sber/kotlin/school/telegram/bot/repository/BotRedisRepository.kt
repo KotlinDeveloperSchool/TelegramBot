@@ -17,6 +17,7 @@ class BotRedisRepository(
     private val STATES_KEY = "states"
     private val ANSWER_KEY = "answer"
     private val PREV_BOT_MSG_KEY = "botMsg"
+    private val PREV_MENU_MSG_KEY = "menuMsg"
     private val PREV_USER_MSG_KEY = "userMsg"
 
     private val gameQueueTemplate = "game_%d"
@@ -98,6 +99,18 @@ class BotRedisRepository(
 
     fun deleteBotMsg(userId: Long) {
         redisTemplate.opsForHash<String, String>().delete(PREV_BOT_MSG_KEY, userId.toString())
+    }
+
+    fun getMenuMsg(userId: Long): String? =
+        redisTemplate.opsForHash<String, String>().get(PREV_MENU_MSG_KEY, userId.toString())
+
+    fun putMenuMsg(userId: Long, msgId: Int) {
+        redisTemplate.opsForHash<String, String>()
+            .put(PREV_MENU_MSG_KEY, userId.toString(), msgId.toString())
+    }
+
+    fun deleteMenuMsg(userId: Long) {
+        redisTemplate.opsForHash<String, String>().delete(PREV_MENU_MSG_KEY, userId.toString())
     }
 
     fun getUserMsg(userId: Long): String? =

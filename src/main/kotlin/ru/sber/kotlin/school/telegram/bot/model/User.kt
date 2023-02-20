@@ -25,5 +25,6 @@ class User(
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "dict_id")]
     )
-    val favorites: MutableList<Dictionary> = Collections.emptyList()
+
+    var favorites: MutableSet<Dictionary> = Collections.emptySet()
 )

@@ -14,7 +14,7 @@ class Predicates(private val botRedisRepository: BotRedisRepository) {
     }
 
     fun isCallbackQueryWithData(data: String): Predicate<Update> = Predicate { upd ->
-        upd.hasCallbackQuery() && !upd.callbackQuery.data.equals(data, true)
+        upd.hasCallbackQuery() && upd.callbackQuery.data.equals(data, true)
     }
 
     fun isCommand(command: String): Predicate<Update> = Predicate { upd ->

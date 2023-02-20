@@ -23,12 +23,13 @@ class OneOfFourGameService(
 ) : GameService {
     private val DELIMITER = "#"
     private val TEMPLATE = "%d$DELIMITER%s$DELIMITER%s$DELIMITER%s"
+    private val WORD_COUNT = 5
 
     override fun prepare(userId: Long) {
         val dictionaryId = (botRedisRepository.getDictionary(userId)
             ?: throw ActionException("No chosen dictionary by user $userId")).toLong()
         val allWords = wordRepository.findAllByDictionaryId(dictionaryId)
-        val wordsToLearn = allWords.getRandomWords(5)
+        val wordsToLearn = allWords.getRandomWords(WORD_COUNT)
 
         wordsToLearn.forEach {
             val others = wordsToLearn.getThreeOtherExcept(it)

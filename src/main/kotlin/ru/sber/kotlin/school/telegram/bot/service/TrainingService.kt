@@ -33,8 +33,6 @@ class TrainingService(
     private val gameSelector: GameSelector
 ) {
 
-
-
     fun getFavorites(upd: Update): AnswerInlineQuery {
         val query = upd.inlineQuery
 
@@ -87,8 +85,8 @@ class TrainingService(
                 .isPersistent(true)
                 .keyboard(
                     listOf(
-                        KeyboardRow(listOf(KeyboardButton(Button.GotItLetsGo.text))),
-                        KeyboardRow(listOf(KeyboardButton(Button.ShowWordsFromDic.text)))
+                        KeyboardRow(listOf(Button.GotItLetsGo.getBtn())),
+                        KeyboardRow(listOf(Button.ShowWordsFromDic.getBtn()))
                     )
                 ).build()
         )
@@ -110,7 +108,7 @@ class TrainingService(
                 .isPersistent(true)
                 .keyboard(
                     listOf(
-                        KeyboardRow(listOf(KeyboardButton(Button.GotItLetsGo.text)))
+                        KeyboardRow(listOf(Button.GotItLetsGo.getBtn()))
                     )
                 ).build()
         )
@@ -137,7 +135,7 @@ class TrainingService(
             ReplyKeyboardMarkup.builder()
                 .isPersistent(true)
                 .keyboard(
-                    listOf(KeyboardRow(listOf(KeyboardButton(Button.OkNext.text))))
+                    listOf(KeyboardRow(listOf(Button.OkNext.getBtn())))
                 ).build()
         )
         .build()

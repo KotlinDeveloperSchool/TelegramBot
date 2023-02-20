@@ -1,6 +1,5 @@
 package ru.sber.kotlin.school.telegram.bot.controller
 
-import org.springframework.stereotype.Component
 import org.telegram.abilitybots.api.objects.Reply
 import org.telegram.abilitybots.api.util.AbilityExtension
 import ru.sber.kotlin.school.telegram.bot.game.GameStyle
@@ -8,6 +7,8 @@ import ru.sber.kotlin.school.telegram.bot.service.TrainingService
 import ru.sber.kotlin.school.telegram.bot.util.Button
 import ru.sber.kotlin.school.telegram.bot.util.CustomSender
 import ru.sber.kotlin.school.telegram.bot.util.Predicates
+import ru.sber.kotlin.school.telegram.bot.util.InlQuery
+import ru.sber.kotlin.school.telegram.bot.util.InlineButton
 import ru.sber.kotlin.school.telegram.bot.util.State
 
 class TrainingExtension(
@@ -19,10 +20,11 @@ class TrainingExtension(
     fun showFavoriteDicts(): Reply = Reply.of(
         customSender.action(trainingService::getFavorites)
             .toState(State.Preparation)
-            .clearMarkup("Выберите словарь для тренировки")
+            .updateMenuMarkup("Выберите словарь для тренировки")
+//            .deleteMenuMsg()
             .send(),
-        predicates.checkState(State.Main)
-            .and(predicates.isExactInlineQuery("dicts"))
+        predicates.checkState(State.MainMenu)
+            .and(predicates.isExactInlineQuery(InlQuery.AllFavorites.text))
     )
 
     fun showGameStyles(): Reply = Reply.of(

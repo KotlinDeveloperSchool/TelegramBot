@@ -2,18 +2,20 @@ package ru.sber.kotlin.school.telegram.bot.service
 
 import org.springframework.stereotype.Service
 import org.telegram.abilitybots.api.util.AbilityUtils
+import org.telegram.abilitybots.api.util.AbilityUtils.getChatId
+import org.telegram.abilitybots.api.util.AbilityUtils.getUser
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.sber.kotlin.school.telegram.bot.model.User
 import ru.sber.kotlin.school.telegram.bot.repository.BotRedisRepository
 import ru.sber.kotlin.school.telegram.bot.repository.UserRepository
-import java.util.Collections
+import ru.sber.kotlin.school.telegram.bot.util.InlineButton
 
 @Service
-class MenuService(
+class MainMenuService(
     private val botRedisRepository: BotRedisRepository,
     private val userRepository: UserRepository
 ) {
@@ -46,8 +48,7 @@ class MenuService(
                 tgUser.id,
                 tgUser.userName,
                 tgUser.firstName,
-                tgUser.lastName,
-                Collections.emptyList()
+                tgUser.lastName
             )
 
             userRepository.save(user)
@@ -57,22 +58,49 @@ class MenuService(
                 "на любом этапе работы с ботом!"
     }
 
-    fun mainMenu(upd: Update): SendMessage =
-        SendMessage(AbilityUtils.getChatId(upd).toString(), "Выберите пункт меню").apply {
-            replyMarkup = InlineKeyboardMarkup().apply {
-                clearByUser(AbilityUtils.getUser(upd).id)
-                val trainButton = InlineKeyboardButton("Тренировка")
-                    .also {
-                        it.switchInlineQueryCurrentChat = "dicts"
-                    }
-                val dictButton = InlineKeyboardButton("Словари")
-                    .also {
-                        it.callbackData = "dictMenu"
-                    }
-                keyboard = listOf(listOf(trainButton, dictButton))
-            }
-        }
+    fun createMainMenu(upd: Update): SendMessage =
+        SendMessage.builder()
+            .chatId(getChatId(upd).toString())
+            .apply {
+                val userId = getUser(upd).id
+                val hasFavorites = userRepository.findById(userId).get().favorites.isNotEmpty()
 
+                text(mainMenuText(hasFavorites))
+                replyMarkup(mainMenuMarkup(hasFavorites))
+
+                clearByUser(userId)
+            }
+        .build()
+
+    fun updateMainMenu(upd: Update): EditMessageText =
+        EditMessageText.builder()
+            .chatId(getChatId(upd).toString())
+            .apply {
+                val userId = getUser(upd).id
+                val hasFavorites = userRepository.findById(userId).get().favorites.isNotEmpty()
+
+                text(mainMenuText(hasFavorites))
+                replyMarkup(mainMenuMarkup(hasFavorites))
+
+                val menuMsg = botRedisRepository.getMenuMsg(userId)
+                messageId(menuMsg!!.toInt())
+            }
+            .build()
+
+    private fun mainMenuText(hasFavorites: Boolean): String {
+        val res = StringBuilder("Главное меню")
+        if (!hasFavorites)
+            res.append("\nДля начала выберите словари для изучения")
+
+        return res.toString()
+    }
+    private fun mainMenuMarkup(hasFavorites: Boolean): InlineKeyboardMarkup {
+        val keyboard = mutableListOf(listOf(InlineButton.DictMenu.getBtn()))
+        if (hasFavorites)
+            keyboard.add(0, listOf(InlineButton.Training.getBtn()))
+
+        return InlineKeyboardMarkup(keyboard)
+    }
     private fun clearByUser(userId: Long) {
         botRedisRepository.clearQueue(userId)
         botRedisRepository.deleteBotMsg(userId)
