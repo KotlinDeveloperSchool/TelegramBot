@@ -13,6 +13,10 @@ class Predicates(private val botRedisRepository: BotRedisRepository) {
         upd.hasInlineQuery() && upd.inlineQuery.query.equals(query, true)
     }
 
+    fun isCallbackQueryWithData(data: String): Predicate<Update> = Predicate { upd ->
+        upd.hasCallbackQuery() && !upd.callbackQuery.data.equals(data, true)
+    }
+
     fun isCommand(command: String): Predicate<Update> = Predicate { upd ->
         upd.hasMessage() && upd.message.isCommand && upd.message.text.equals("/$command")
     }
