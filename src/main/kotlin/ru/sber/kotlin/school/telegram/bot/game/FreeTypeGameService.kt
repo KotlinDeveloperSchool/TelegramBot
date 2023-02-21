@@ -1,7 +1,6 @@
 package ru.sber.kotlin.school.telegram.bot.game
 
 import org.springframework.stereotype.Component
-import org.telegram.abilitybots.api.util.AbilityUtils.getUser
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
@@ -18,12 +17,13 @@ class FreeTypeGameService(
 ) : GameService {
     private val DELIMITER = "#"
     private val PAIR_TEMPLATE = "%d$DELIMITER%s$DELIMITER%s"
+    private val WORD_COUNT = 5
 
     override fun prepare(userId: Long) {
         val dictionaryId = (botRedisRepository.getDictionary(userId)
             ?: throw ActionException("No chosen dictionary by user $userId")).toLong()
         val allWords = wordRepository.findAllByDictionaryId(dictionaryId)
-        val wordsToLearn = getRandomWords(3, allWords)
+        val wordsToLearn = getRandomWords(WORD_COUNT, allWords)
 
         wordsToLearn.forEach {
             if (Random.nextInt(2) == 0)
@@ -38,7 +38,7 @@ class FreeTypeGameService(
 
     private fun getRandomWords(count: Int, words: List<Word>): MutableSet<Word> {
         val result = HashSet<Word>()
-        while (result.size < count) {
+        while (result.size < count && result.size < words.size) {
             val i = Random.nextInt(words.size)
             result.add(words[i])
         }

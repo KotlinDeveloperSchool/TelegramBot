@@ -11,8 +11,21 @@ import java.util.Optional
 interface DictionaryRepository : JpaRepository<Dictionary, Long> {
 
     @Query(
-        "select id from dictionary where (owner_id=1 or owner_id=:user) and name=:name",
+        "select * from dictionary where (owner_id=1 or owner_id=:userId) and name=:name",
         nativeQuery = true
     )
-    fun findIdByNameForUser(@Param("name") name: String, @Param("user") userId: Long): Optional<Long>
+    fun findByNameForUser(@Param("name") name: String, @Param("userId") userId: Long): Optional<Dictionary>
+
+    @Query(
+        "SELECT * FROM dictionary WHERE owner_id = :userId Or owner_id = 1",
+        nativeQuery = true
+    )
+    fun findAllDictionariesByUser(@Param("userId") userId: Long): List<Dictionary>
+
+    @Query(
+        "SELECT * FROM dictionary d LEFT JOIN favorite f on d.id = f.dict_id " +
+                "WHERE f.dict_id IS NULL AND (owner_id = :userId Or owner_id = 1)",
+        nativeQuery = true
+    )
+    fun findNotFavoritesForUser(@Param("userId") userId: Long): List<Dictionary>
 }

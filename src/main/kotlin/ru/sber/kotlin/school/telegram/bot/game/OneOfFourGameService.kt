@@ -1,8 +1,6 @@
 package ru.sber.kotlin.school.telegram.bot.game
 
 import org.springframework.stereotype.Component
-import org.telegram.abilitybots.api.util.AbilityUtils
-import org.telegram.abilitybots.api.util.AbilityUtils.getUser
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
@@ -13,7 +11,6 @@ import ru.sber.kotlin.school.telegram.bot.exception.ActionException
 import ru.sber.kotlin.school.telegram.bot.model.Word
 import ru.sber.kotlin.school.telegram.bot.repository.BotRedisRepository
 import ru.sber.kotlin.school.telegram.bot.repository.WordRepository
-import ru.sber.kotlin.school.telegram.bot.util.Button
 import kotlin.random.Random
 
 @Component("OneOfFour")
@@ -23,12 +20,13 @@ class OneOfFourGameService(
 ) : GameService {
     private val DELIMITER = "#"
     private val TEMPLATE = "%d$DELIMITER%s$DELIMITER%s$DELIMITER%s"
+    private val WORD_COUNT = 5
 
     override fun prepare(userId: Long) {
         val dictionaryId = (botRedisRepository.getDictionary(userId)
             ?: throw ActionException("No chosen dictionary by user $userId")).toLong()
         val allWords = wordRepository.findAllByDictionaryId(dictionaryId)
-        val wordsToLearn = allWords.getRandomWords(5)
+        val wordsToLearn = allWords.getRandomWords(WORD_COUNT)
 
         wordsToLearn.forEach {
             val others = wordsToLearn.getThreeOtherExcept(it)
@@ -54,7 +52,7 @@ class OneOfFourGameService(
 
     private fun List<Word>.getRandomWords(count: Int): MutableSet<Word> {
         val result = HashSet<Word>()
-        while (result.size < count) {
+        while (result.size < count && result.size < this.size) {
             val i = Random.nextInt(this.size)
             result.add(this[i])
         }
@@ -94,7 +92,7 @@ class OneOfFourGameService(
                 .keyboard(
                     listOf(
                         KeyboardRow(buttons.filterIndexed { i, _ -> i % 2 == 0 }),
-                        KeyboardRow(buttons.filterIndexed { i, _ -> i % 2 == 1})
+                        KeyboardRow(buttons.filterIndexed { i, _ -> i % 2 == 1 })
                     )
                 ).build()
         } else ReplyKeyboardRemove(true)

@@ -12,7 +12,9 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.sber.kotlin.school.telegram.bot.repository.BotRedisRepository
 import java.io.Serializable
 
@@ -60,22 +62,31 @@ class CustomSender(
         private var deleteKeyboard: String? = null
         private var saveBotMsg = false
         private var saveUserMsg = false
+        private var saveMenuMsg = false
         private var deleteBotMsg = false
         private var deleteUserMsg = false
+        private var deleteMenuMsg = false
         private var msgText: String? = null
+        private var buttons: Array<out InlineButton>? = null
 
         fun toState(state: State) = apply { this.state = state }
 
-        fun clearMarkup(newText: String) = apply { this.clearMarkup = newText }
+        fun updateMenuMarkup(newText: String, vararg buttons: InlineButton) = apply {
+            this.clearMarkup = newText
+            this.buttons = buttons
+        }
+
         fun deleteKeyboard(newText: String) = apply { this.deleteKeyboard = newText }
 
         fun botMsg() = apply { this.saveBotMsg = true }
 
         fun userMsg() = apply { this.saveUserMsg = true }
+        fun menuMsg() = apply { this.saveMenuMsg = true }
 
         fun deleteBotMsg() = apply { this.deleteBotMsg = true }
 
         fun deleteUserMsg() = apply { this.deleteUserMsg = true }
+        fun deleteMenuMsg() = apply { this.deleteMenuMsg = true }
 
         fun updateBotMsg(newText: String) = apply { this.msgText = newText }
 
@@ -103,30 +114,43 @@ class CustomSender(
 
                 if (deleteBotMsg) deleteBotMsg(userId, chatId)
                 if (deleteUserMsg) deleteUserMsg(userId, chatId)
-                clearMarkup?.let { clearMarkup(userId, chatId) }
+                if (deleteMenuMsg) deleteMenuMsg(userId, chatId)
+                clearMarkup?.let { updateMenuMarkup(userId, chatId) }
                 msgText?.let { updateBotMsg(userId, chatId) }
 
                 val answer = action.invoke(upd)
 
                 val msg = sender.execute(answer)
                 if (saveBotMsg && msg is Message) botRedisRepository.putBotMsg(userId, msg.messageId)
+                if (saveMenuMsg && msg is Message) botRedisRepository.putMenuMsg(userId, msg.messageId)
             } catch (e: Exception) {
                 println(e.message)
             }
         }
 
-        private fun clearMarkup(userId: Long, chatId: String) {
+        private fun updateMenuMarkup(userId: Long, chatId: String) {
             val prevMsg = botRedisRepository.getBotMsg(userId)
             if (prevMsg != null) {
                 val editMsg = EditMessageText.builder()
                     .chatId(chatId)
                     .text(clearMarkup!!)
                     .messageId(prevMsg.toInt())
-                    .replyMarkup(null)
+                    .replyMarkup(buttons.toInline())
                     .build()
                 sender.execute(editMsg)
                 botRedisRepository.deleteBotMsg(userId)
             }
+        }
+
+        private fun Array<out InlineButton>?.toInline(): InlineKeyboardMarkup? {
+            if (this == null) return null
+
+            val keyboard: MutableList<MutableList<InlineKeyboardButton>> = ArrayList()
+            this.forEach { button ->
+                keyboard.add(mutableListOf(button.getBtn()))
+            }
+
+            return InlineKeyboardMarkup(keyboard)
         }
 
         private fun deleteKeyboard(chatId: String, text: String) {
@@ -159,6 +183,12 @@ class CustomSender(
 
         private fun deleteUserMsg(userId: Long, chatId: String) {
             val msgId = botRedisRepository.getUserMsg(userId)
+            deleteMsg(chatId, msgId)
+            botRedisRepository.deleteUserMsg(userId)
+        }
+
+        private fun deleteMenuMsg(userId: Long, chatId: String) {
+            val msgId = botRedisRepository.getMenuMsg(userId)
             deleteMsg(chatId, msgId)
             botRedisRepository.deleteUserMsg(userId)
         }

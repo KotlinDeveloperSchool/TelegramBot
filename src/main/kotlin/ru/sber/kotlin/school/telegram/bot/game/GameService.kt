@@ -47,7 +47,7 @@ interface GameService {
         redisRepo: BotRedisRepository,
         wordRepo: WordRepository
     ): String {
-        val count = redisRepo.getQueueSize(userId)?:0
+        val count = redisRepo.getQueueSize(userId) ?: 0
         val idList = ArrayList<Long>()
         for (i in 1..count) {
             idList.add(redisRepo.popAndPushBack(userId)!!.split(delimiter)[0].toLong())

@@ -6,7 +6,7 @@ import ru.sber.kotlin.school.telegram.bot.exception.ActionException
 enum class GameStyle(
     private val title: String,
     private val description: String
-    ) {
+) {
     OneOfFour(
         "На выбор из четырёх", "На экране будет представлено слово и 4 варианта " +
                 "перевода, Вам необходимо выбрать правильный"

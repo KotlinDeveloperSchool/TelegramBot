@@ -8,9 +8,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 import ru.sber.kotlin.school.telegram.bot.game.GameSelector
@@ -30,47 +28,10 @@ class TrainingService(
     private val gameSelector: GameSelector
 ) {
 
-    fun getAllFromRedis(upd: Update): SendMessage {
-        val userId = getUser(upd).id
-        val state = botRedisRepository.getState(userId)
-        val dic = botRedisRepository.getDictionary(userId)
-        val style = botRedisRepository.getStyle(userId)
-        val queueSize = botRedisRepository.getQueueSize(userId)
-        val botMsg = botRedisRepository.getBotMsg(userId)
-        val userMsg = botRedisRepository.getUserMsg(userId)
-        val answer = botRedisRepository.getAnswer(userId)
-
-        return SendMessage(
-            getChatId(upd).toString(), "Этап: $state\nСловарь: $dic\nТип игры: $style\nСлов: $queueSize" +
-                    "\nОт бота: $botMsg\nОт юзера: $userMsg\nОтвет: $answer"
-        )
-    }
-
-    fun mainMenu(upd: Update): SendMessage =
-        SendMessage(getChatId(upd).toString(), "Выберите пункт меню").apply {
-            replyMarkup = InlineKeyboardMarkup().apply {
-                clearByUser(getUser(upd).id)
-                val trainButton = InlineKeyboardButton("Тренировка")
-                    .also {
-                        it.switchInlineQueryCurrentChat = "dicts"
-                    }
-                keyboard = listOf(listOf(trainButton))
-            }
-        }
-
-    private fun clearByUser(userId: Long) {
-        botRedisRepository.clearQueue(userId)
-        botRedisRepository.deleteBotMsg(userId)
-        botRedisRepository.deleteUserMsg(userId)
-        botRedisRepository.deleteAnswer(userId)
-        botRedisRepository.deleteDictionary(userId)
-        botRedisRepository.deleteStyle(userId)
-    }
-
     fun getFavorites(upd: Update): AnswerInlineQuery {
         val query = upd.inlineQuery
 
-        val user: User = userRepository.findById(1)
+        val user: User = userRepository.findById(getUser(upd).id)
             .orElse(User(1, "admin", "admin", "admin"))
         val results = user.favorites
             .map { prepareDictArticle(it) }
@@ -107,8 +68,8 @@ class TrainingService(
         .build().also {
             val dictionaryName = upd.message.text.substringAfter('\n')
             val userId = getUser(upd).id
-            val dictionaryId = dictionaryRepository.findIdByNameForUser(dictionaryName, userId).get()
-            botRedisRepository.putToDictionary(userId, dictionaryId)
+            val dictionaryId = dictionaryRepository.findByNameForUser(dictionaryName, userId).get().id
+            botRedisRepository.putDictionary(userId, dictionaryId)
         }
 
     fun prepareGame(upd: Update): SendMessage = SendMessage.builder()
@@ -119,8 +80,8 @@ class TrainingService(
                 .isPersistent(true)
                 .keyboard(
                     listOf(
-                        KeyboardRow(listOf(KeyboardButton(Button.GotItLetsGo.text))),
-                        KeyboardRow(listOf(KeyboardButton(Button.ShowWordsFromDic.text)))
+                        KeyboardRow(listOf(Button.GotItLetsGo.getBtn())),
+                        KeyboardRow(listOf(Button.ShowWordsFromDic.getBtn()))
                     )
                 ).build()
         )
@@ -142,7 +103,7 @@ class TrainingService(
                 .isPersistent(true)
                 .keyboard(
                     listOf(
-                        KeyboardRow(listOf(KeyboardButton(Button.GotItLetsGo.text)))
+                        KeyboardRow(listOf(Button.GotItLetsGo.getBtn()))
                     )
                 ).build()
         )
@@ -169,7 +130,7 @@ class TrainingService(
             ReplyKeyboardMarkup.builder()
                 .isPersistent(true)
                 .keyboard(
-                    listOf(KeyboardRow(listOf(KeyboardButton(Button.OkNext.text))))
+                    listOf(KeyboardRow(listOf(Button.OkNext.getBtn())))
                 ).build()
         )
         .build()
