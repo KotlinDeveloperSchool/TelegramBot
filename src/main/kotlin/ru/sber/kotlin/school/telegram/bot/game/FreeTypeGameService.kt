@@ -48,10 +48,8 @@ class FreeTypeGameService(
 
     override fun getTextForRound(userId: Long): String {
         val word = botRedisRepository.rightPopMsg(userId)
-        if (word == null) {
-            botRedisRepository.deleteState(userId)
-            return "Тренировка окончена! Но вы можете начать сначала..."
-        }
+            ?: return defaultEndGame(userId, botRedisRepository)
+
         botRedisRepository.putAnswer(userId, word)
 
         return word.split(DELIMITER)[1]
