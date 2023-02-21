@@ -13,7 +13,8 @@ class BotRedisRepository(
     private val redisTemplate: RedisTemplate<String, String>
 ) {
     private val GAME_STYLE_KEY = "styles"
-    private val GAME_DICS_KEY = "dictionary"
+    private val GAME_DICS_KEY = "gameDict"
+    private val EDIT_DICS_KEY = "editDict"
     private val STATES_KEY = "states"
     private val ANSWER_KEY = "answer"
     private val PREV_BOT_MSG_KEY = "botMsg"
@@ -50,11 +51,20 @@ class BotRedisRepository(
     fun getDictionary(userId: Long): String? =
         redisTemplate.opsForHash<String, String>().get(GAME_DICS_KEY, userId.toString())
 
-    fun putToDictionary(userId: Long, dictionaryId: Long) = redisTemplate.opsForHash<String, String>()
+    fun putDictionary(userId: Long, dictionaryId: Long) = redisTemplate.opsForHash<String, String>()
         .put(GAME_DICS_KEY, userId.toString(), dictionaryId.toString())
 
     fun deleteDictionary(userId: Long) =
         redisTemplate.opsForHash<String, String>().delete(GAME_DICS_KEY, userId.toString())
+
+    fun getEditDict(userId: Long): String? =
+        redisTemplate.opsForHash<String, String>().get(EDIT_DICS_KEY, userId.toString())
+
+    fun putEditDict(userId: Long, dictionaryId: Long) = redisTemplate.opsForHash<String, String>()
+        .put(EDIT_DICS_KEY, userId.toString(), dictionaryId.toString())
+
+    fun deleteEditDict(userId: Long) =
+        redisTemplate.opsForHash<String, String>().delete(EDIT_DICS_KEY, userId.toString())
 
     fun getState(userId: Long): String? =
         redisTemplate.opsForHash<String, String>().get(STATES_KEY, userId.toString())

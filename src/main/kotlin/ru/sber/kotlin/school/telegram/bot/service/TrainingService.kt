@@ -1,7 +1,6 @@
 package ru.sber.kotlin.school.telegram.bot.service
 
 import org.springframework.stereotype.Service
-import org.telegram.abilitybots.api.util.AbilityUtils
 import org.telegram.abilitybots.api.util.AbilityUtils.getChatId
 import org.telegram.abilitybots.api.util.AbilityUtils.getUser
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery
@@ -9,10 +8,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 import ru.sber.kotlin.school.telegram.bot.game.GameSelector
@@ -23,7 +19,6 @@ import ru.sber.kotlin.school.telegram.bot.repository.BotRedisRepository
 import ru.sber.kotlin.school.telegram.bot.repository.DictionaryRepository
 import ru.sber.kotlin.school.telegram.bot.repository.UserRepository
 import ru.sber.kotlin.school.telegram.bot.util.Button
-import java.util.Collections
 
 @Service
 class TrainingService(
@@ -74,7 +69,7 @@ class TrainingService(
             val dictionaryName = upd.message.text.substringAfter('\n')
             val userId = getUser(upd).id
             val dictionaryId = dictionaryRepository.findByNameForUser(dictionaryName, userId).get().id
-            botRedisRepository.putToDictionary(userId, dictionaryId)
+            botRedisRepository.putDictionary(userId, dictionaryId)
         }
 
     fun prepareGame(upd: Update): SendMessage = SendMessage.builder()

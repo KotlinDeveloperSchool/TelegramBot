@@ -6,6 +6,7 @@ import org.telegram.abilitybots.api.bot.AbilityBot
 import org.telegram.abilitybots.api.toggle.BareboneToggle
 import org.telegram.abilitybots.api.util.AbilityExtension
 import ru.sber.kotlin.school.telegram.bot.repository.BotRedisRepository
+import ru.sber.kotlin.school.telegram.bot.service.CreationService
 import ru.sber.kotlin.school.telegram.bot.service.MainMenuService
 import ru.sber.kotlin.school.telegram.bot.service.TrainingService
 import ru.sber.kotlin.school.telegram.bot.service.DictionaryService
@@ -24,8 +25,8 @@ class TrainingBot(
     private val predicates: Predicates,
     private val botRedisRepository: BotRedisRepository,
     private val dictionaryMenuService: DictionaryMenuService,
-    private val dictionaryService:
-    DictionaryService
+    private val dictionaryService: DictionaryService,
+    private val creationService: CreationService
 ) : AbilityBot(token, name, BareboneToggle()) {
 
     private val customSender: CustomSender = CustomSender(
@@ -47,6 +48,10 @@ class TrainingBot(
 
     fun dictExtension(): AbilityExtension {
         return DictExtension(customSender, predicates, dictionaryMenuService, dictionaryService, sender)
+    }
+
+    fun creationExtension(): AbilityExtension {
+        return CreationExtension(customSender, creationService, predicates)
     }
 
 }

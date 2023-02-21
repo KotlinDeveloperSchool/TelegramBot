@@ -21,7 +21,6 @@ class TrainingExtension(
         customSender.action(trainingService::getFavorites)
             .toState(State.Preparation)
             .updateMenuMarkup("Выберите словарь для тренировки")
-//            .deleteMenuMsg()
             .send(),
         predicates.checkState(State.MainMenu)
             .and(predicates.isExactInlineQuery(InlQuery.AllFavorites.text))

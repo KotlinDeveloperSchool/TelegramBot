@@ -37,6 +37,9 @@ class Predicates(private val botRedisRepository: BotRedisRepository) {
         isTextMessage(upd) && !upd.message.isCommand && !titles.contains(upd.message.text)
     }
 
+    fun isMatchPattern(pattern: Regex): Predicate<Update> = Predicate { upd ->
+        isTextMessage(upd) && !upd.message.isCommand && upd.message.text.matches(pattern)
+    }
     private fun isTextMessage(upd: Update): Boolean =
         upd.hasMessage() && upd.message.hasText()
 
@@ -45,5 +48,15 @@ class Predicates(private val botRedisRepository: BotRedisRepository) {
         val actual: String? = botRedisRepository.getState(userId)
 
         expected.toString().equals(actual, true)
+    }
+
+    fun checkStates(vararg expected: State): Predicate<Update> = Predicate { upd ->
+        val userId = AbilityUtils.getUser(upd).id
+        val actual: String? = botRedisRepository.getState(userId)
+        if (actual != null) {
+            val checking = State.valueOf(actual)
+//            expected.toString().equals(actual, true)
+            expected.contains(checking)
+        } else false
     }
 }

@@ -84,6 +84,8 @@ class MainMenuService(
 
                 val menuMsg = botRedisRepository.getMenuMsg(userId)
                 messageId(menuMsg!!.toInt())
+
+                clearByUser(userId)
             }
             .build()
 
@@ -108,5 +110,6 @@ class MainMenuService(
         botRedisRepository.deleteAnswer(userId)
         botRedisRepository.deleteDictionary(userId)
         botRedisRepository.deleteStyle(userId)
+        botRedisRepository.deleteEditDict(userId)
     }
 }

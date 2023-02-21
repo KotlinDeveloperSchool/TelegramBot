@@ -28,7 +28,7 @@ class DictExtension(
             .toState(State.DictMenu)
             .botMsg()
             .send(),
-        predicates.checkState(State.MainMenu)
+        predicates.checkStates(State.MainMenu, State.PrepareDict, State.CreateDict, State.AddWord)
             .and(predicates.isCallbackQueryWithData("dictMenu"))
     )
 
