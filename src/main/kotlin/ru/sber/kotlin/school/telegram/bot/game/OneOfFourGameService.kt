@@ -1,8 +1,6 @@
 package ru.sber.kotlin.school.telegram.bot.game
 
 import org.springframework.stereotype.Component
-import org.telegram.abilitybots.api.util.AbilityUtils
-import org.telegram.abilitybots.api.util.AbilityUtils.getUser
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
@@ -13,7 +11,6 @@ import ru.sber.kotlin.school.telegram.bot.exception.ActionException
 import ru.sber.kotlin.school.telegram.bot.model.Word
 import ru.sber.kotlin.school.telegram.bot.repository.BotRedisRepository
 import ru.sber.kotlin.school.telegram.bot.repository.WordRepository
-import ru.sber.kotlin.school.telegram.bot.util.Button
 import kotlin.random.Random
 
 @Component("OneOfFour")
@@ -95,7 +92,7 @@ class OneOfFourGameService(
                 .keyboard(
                     listOf(
                         KeyboardRow(buttons.filterIndexed { i, _ -> i % 2 == 0 }),
-                        KeyboardRow(buttons.filterIndexed { i, _ -> i % 2 == 1})
+                        KeyboardRow(buttons.filterIndexed { i, _ -> i % 2 == 1 })
                     )
                 ).build()
         } else ReplyKeyboardRemove(true)

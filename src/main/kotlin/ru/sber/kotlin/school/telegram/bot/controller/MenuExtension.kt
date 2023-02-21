@@ -11,7 +11,7 @@ class MenuExtension(
     private val customSender: CustomSender,
     private val mainMenuService: MainMenuService,
     private val predicates: Predicates
-    ) : AbilityExtension {
+) : AbilityExtension {
 
     fun startBot(): Reply = Reply.of(
         customSender.action(mainMenuService::startByUser)
@@ -29,7 +29,7 @@ class MenuExtension(
         customSender.action(mainMenuService::createMainMenu)
             .toState(State.MainMenu)
             .deleteMenuMsg()
-            .deleteKeyboard("Переходим в главное меню!")
+            .deleteKeyboard("Создаём главное меню...")
             .botMsg()
             .menuMsg()
             .send(),

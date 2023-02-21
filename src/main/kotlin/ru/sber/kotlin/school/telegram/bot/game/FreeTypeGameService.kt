@@ -1,7 +1,6 @@
 package ru.sber.kotlin.school.telegram.bot.game
 
 import org.springframework.stereotype.Component
-import org.telegram.abilitybots.api.util.AbilityUtils.getUser
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove

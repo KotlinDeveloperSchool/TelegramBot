@@ -7,10 +7,10 @@ import org.telegram.abilitybots.api.toggle.BareboneToggle
 import org.telegram.abilitybots.api.util.AbilityExtension
 import ru.sber.kotlin.school.telegram.bot.repository.BotRedisRepository
 import ru.sber.kotlin.school.telegram.bot.service.CreationService
+import ru.sber.kotlin.school.telegram.bot.service.DictionaryMenuService
+import ru.sber.kotlin.school.telegram.bot.service.DictionaryService
 import ru.sber.kotlin.school.telegram.bot.service.MainMenuService
 import ru.sber.kotlin.school.telegram.bot.service.TrainingService
-import ru.sber.kotlin.school.telegram.bot.service.DictionaryService
-import ru.sber.kotlin.school.telegram.bot.service.DictionaryMenuService
 import ru.sber.kotlin.school.telegram.bot.util.CustomSender
 import ru.sber.kotlin.school.telegram.bot.util.Predicates
 

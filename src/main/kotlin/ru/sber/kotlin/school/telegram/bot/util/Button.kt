@@ -14,16 +14,16 @@ enum class InlineButton(
         override fun getBtn(): InlineKeyboardButton =
             callbackBtn(State.DictMenu.toString())
     },
-    AddFromReady("Добавить из готовых"){
+    AddFromReady("Добавить из готовых") {
         override fun getBtn(): InlineKeyboardButton =
             switchToInlineBtn(InlQuery.AllDictionaries.text)
     },
-    CreateNewDictionary("Создать новый словарь"){
+    CreateNewDictionary("Создать новый словарь") {
         override fun getBtn(): InlineKeyboardButton =
             callbackBtn(State.CreateDict.toString())
     },
 
-    DeleteFavDictionary("Удалить словарь из списка изучаемых"){
+    DeleteFavDictionary("Удалить словарь из списка изучаемых") {
         override fun getBtn(): InlineKeyboardButton =
             switchToInlineBtn(InlQuery.AllFavorites.text)
     },
@@ -36,10 +36,10 @@ enum class InlineButton(
     abstract fun getBtn(): InlineKeyboardButton
 
     protected fun callbackBtn(data: String): InlineKeyboardButton = getBuilderWithText()
-            .callbackData(data)
-            .build()
+        .callbackData(data)
+        .build()
 
-    protected fun switchToInlineBtn(query: String): InlineKeyboardButton =getBuilderWithText()
+    protected fun switchToInlineBtn(query: String): InlineKeyboardButton = getBuilderWithText()
         .switchInlineQueryCurrentChat(query)
         .build()
 
@@ -47,6 +47,7 @@ enum class InlineButton(
         InlineKeyboardButton.builder()
             .text(this.buttonName)
 }
+
 enum class Button(
     val text: String
 ) {
@@ -58,6 +59,7 @@ enum class Button(
         fun textsSet(): Set<String> =
             Button.values().map { it.text }.toSet()
     }
+
     fun getBtn(): KeyboardButton =
         KeyboardButton(this.text)
 }

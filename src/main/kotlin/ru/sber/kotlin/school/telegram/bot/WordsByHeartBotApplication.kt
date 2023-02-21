@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class WordsByHeartBotApplication
 
 fun main(args: Array<String>) {
-	runApplication<WordsByHeartBotApplication>(*args)
+    runApplication<WordsByHeartBotApplication>(*args)
 }

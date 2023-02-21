@@ -58,7 +58,7 @@ class DictionaryMenuService(
 
     private fun getFavoriteText(favorites: Collection<Dictionary>): String {
         var result = ""
-        favorites.forEachIndexed() { i, favDictionary ->
+        favorites.forEachIndexed { i, favDictionary ->
             result += "\n${i + 1}. ${favDictionary.name}"
         }
 

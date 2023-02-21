@@ -1,7 +1,6 @@
 package ru.sber.kotlin.school.telegram.bot.service
 
 import org.springframework.stereotype.Service
-import org.telegram.abilitybots.api.util.AbilityUtils
 import org.telegram.abilitybots.api.util.AbilityUtils.getChatId
 import org.telegram.abilitybots.api.util.AbilityUtils.getUser
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
@@ -20,7 +19,7 @@ class MainMenuService(
     private val userRepository: UserRepository
 ) {
     fun getAllFromRedis(upd: Update): SendMessage {
-        val userId = AbilityUtils.getUser(upd).id
+        val userId = getUser(upd).id
         val state = botRedisRepository.getState(userId)
         val dic = botRedisRepository.getDictionary(userId)
         val style = botRedisRepository.getStyle(userId)
@@ -30,19 +29,19 @@ class MainMenuService(
         val answer = botRedisRepository.getAnswer(userId)
 
         return SendMessage(
-            AbilityUtils.getChatId(upd).toString(), "Этап: $state\nСловарь: $dic\nТип игры: $style\nСлов: $queueSize" +
+            getChatId(upd).toString(), "Этап: $state\nСловарь: $dic\nТип игры: $style\nСлов: $queueSize" +
                     "\nОт бота: $botMsg\nОт юзера: $userMsg\nОтвет: $answer"
         )
     }
 
     fun startByUser(upd: Update): SendMessage = SendMessage.builder()
-        .chatId(AbilityUtils.getChatId(upd).toString())
+        .chatId(getChatId(upd).toString())
         .text(registerUser(upd))
         .replyMarkup(ReplyKeyboardRemove(true))
         .build()
 
     private fun registerUser(upd: Update): String {
-        val tgUser = AbilityUtils.getUser(upd)
+        val tgUser = getUser(upd)
         if (!userRepository.existsById(tgUser.id)) {
             val user = User(
                 tgUser.id,
@@ -70,7 +69,7 @@ class MainMenuService(
 
                 clearByUser(userId)
             }
-        .build()
+            .build()
 
     fun updateMainMenu(upd: Update): EditMessageText =
         EditMessageText.builder()
@@ -96,6 +95,7 @@ class MainMenuService(
 
         return res.toString()
     }
+
     private fun mainMenuMarkup(hasFavorites: Boolean): InlineKeyboardMarkup {
         val keyboard = mutableListOf(listOf(InlineButton.DictMenu.getBtn()))
         if (hasFavorites)
@@ -103,6 +103,7 @@ class MainMenuService(
 
         return InlineKeyboardMarkup(keyboard)
     }
+
     private fun clearByUser(userId: Long) {
         botRedisRepository.clearQueue(userId)
         botRedisRepository.deleteBotMsg(userId)

@@ -75,6 +75,7 @@ class CustomSender(
             this.clearMarkup = newText
             this.buttons = buttons
         }
+
         fun deleteKeyboard(newText: String) = apply { this.deleteKeyboard = newText }
 
         fun botMsg() = apply { this.saveBotMsg = true }
@@ -158,8 +159,7 @@ class CustomSender(
                 .text(text)
                 .replyMarkup(ReplyKeyboardRemove(true))
                 .build()
-            val msg = sender.execute(removeKeyboard)
-            deleteMsg(msg.chatId.toString(), msg.messageId.toString())
+            sender.execute(removeKeyboard)
         }
 
         private fun updateBotMsg(userId: Long, chatId: String) {

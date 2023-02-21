@@ -98,17 +98,20 @@ class CreationService(
         return EditMessageText.builder()
             .chatId(chatId)
             .messageId(menuMsgId!!.toInt())
-            .text("Слово '$words' не соответствует правилам ввода. Вот пара примеров:\n1) polar bear " +
-                    "белый медведь\n2) белый медведь polar bear")
+            .text(
+                "Слово '$words' не соответствует правилам ввода. Вот пара примеров:\n1) polar bear " +
+                        "белый медведь\n2) белый медведь polar bear"
+            )
             .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
             .build()
     }
+
     private fun getFavorites(userId: Long) =
         userRepository.findById(userId).get().favorites
 
     private fun getFavoriteText(favorites: Collection<Dictionary>): String {
         var result = ""
-        favorites.forEachIndexed() { i, favDictionary ->
+        favorites.forEachIndexed { i, favDictionary ->
             result += "\n${i + 1}. ${favDictionary.name}"
         }
 

@@ -40,6 +40,7 @@ class Predicates(private val botRedisRepository: BotRedisRepository) {
     fun isMatchPattern(pattern: Regex): Predicate<Update> = Predicate { upd ->
         isTextMessage(upd) && !upd.message.isCommand && upd.message.text.matches(pattern)
     }
+
     private fun isTextMessage(upd: Update): Boolean =
         upd.hasMessage() && upd.message.hasText()
 

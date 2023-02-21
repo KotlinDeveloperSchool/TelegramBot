@@ -7,11 +7,11 @@ import org.telegram.abilitybots.api.util.AbilityExtension
 import org.telegram.abilitybots.api.util.AbilityUtils
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
-import ru.sber.kotlin.school.telegram.bot.service.DictionaryService
 import ru.sber.kotlin.school.telegram.bot.service.DictionaryMenuService
+import ru.sber.kotlin.school.telegram.bot.service.DictionaryService
 import ru.sber.kotlin.school.telegram.bot.util.CustomSender
-import ru.sber.kotlin.school.telegram.bot.util.Predicates
 import ru.sber.kotlin.school.telegram.bot.util.InlQuery
+import ru.sber.kotlin.school.telegram.bot.util.Predicates
 import ru.sber.kotlin.school.telegram.bot.util.State
 
 class DictExtension(
@@ -21,7 +21,7 @@ class DictExtension(
     private val dictionaryService:
     DictionaryService,
     private val sender: MessageSender
-)  : AbilityExtension {
+) : AbilityExtension {
 
     fun dictMenu(): Reply = Reply.of(
         customSender.action(dictionaryMenuService::getDictMenu)
@@ -86,7 +86,8 @@ class DictExtension(
                     "Временно, далее здесь методы перехода в меню или указания на создание темы нового словаря " +
                             "(можно ввод пользователем темы сделать через inlinequery как в примере с fails - " +
                             "вываливается fails (переименованный типо после двоеточия введите тему словаря: ) " +
-                            "и пользователь вводит тему и и направляет весь этот кусок в чат)")
+                            "и пользователь вводит тему и и направляет весь этот кусок в чат)"
+                )
             )
         }
         return Reply.of(action, isInlineQueryTemporary())
