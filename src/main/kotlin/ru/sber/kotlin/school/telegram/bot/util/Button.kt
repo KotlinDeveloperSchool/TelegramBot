@@ -14,7 +14,7 @@ enum class InlineButton(
         override fun getBtn(): InlineKeyboardButton =
             callbackBtn(State.DictMenu.toString())
     },
-    AddFromReady("Добавить из готовых") {
+    AddFromReady("Выбрать для изучени") {
         override fun getBtn(): InlineKeyboardButton =
             switchToInlineBtn(InlQuery.AllDictionaries.text)
     },

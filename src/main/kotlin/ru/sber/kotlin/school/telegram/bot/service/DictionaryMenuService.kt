@@ -34,8 +34,8 @@ class DictionaryMenuService(
             .messageId(prevMsg!!.toInt())
 
         val buttons = mutableListOf(
-            InlineButton.CreateNewDictionary,
             InlineButton.AddFromReady,
+            InlineButton.CreateNewDictionary,
             InlineButton.MainMenu
         )
 

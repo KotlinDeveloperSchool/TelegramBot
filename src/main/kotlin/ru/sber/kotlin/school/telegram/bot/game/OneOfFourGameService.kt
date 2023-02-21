@@ -52,7 +52,7 @@ class OneOfFourGameService(
 
     private fun List<Word>.getRandomWords(count: Int): MutableSet<Word> {
         val result = HashSet<Word>()
-        while (result.size < count) {
+        while (result.size < count && result.size < this.size) {
             val i = Random.nextInt(this.size)
             result.add(this[i])
         }

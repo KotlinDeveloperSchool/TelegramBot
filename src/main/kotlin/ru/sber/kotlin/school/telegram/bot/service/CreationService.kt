@@ -3,11 +3,8 @@ package ru.sber.kotlin.school.telegram.bot.service
 import org.springframework.stereotype.Service
 import org.telegram.abilitybots.api.util.AbilityUtils.getChatId
 import org.telegram.abilitybots.api.util.AbilityUtils.getUser
-import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
-import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent
-import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.sber.kotlin.school.telegram.bot.model.Dictionary
@@ -31,91 +28,104 @@ class CreationService(
     private val rusPattern = "([а-яА-Я]+( ?[а-яА-Я]+)*)".toRegex()
     val fullWordPattern = ("^($rusPattern $engPattern)|($engPattern $rusPattern)\$").toRegex()
 
-    fun creation(upd: Update): EditMessageText {
-        val userId = getUser(upd).id
+    fun creation(upd: Update): EditMessageText =
+        buildMessageWithText("Введите название словаря$attention", upd)
+//        val userId = getUser(upd).id
+//
+//        val chatId = getChatId(upd).toString()
+//        val prevMsg = botRedisRepository.getMenuMsg(userId)
+//
+//        return EditMessageText.builder()
+//            .chatId(chatId)
+//            .messageId(prevMsg!!.toInt())
+//            .text("Введите название словаря$attention")
+//            .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
+//            .build()
 
-        val chatId = getChatId(upd).toString()
-        val prevMsg = botRedisRepository.getMenuMsg(userId)
-
-        return EditMessageText.builder()
-            .chatId(chatId)
-            .messageId(prevMsg!!.toInt())
-            .text("Введите название словаря$attention")
-            .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
-            .build()
-    }
 
     fun createDict(upd: Update): EditMessageText {
-        val userId = getUser(upd).id
+        var messageText = saveNewDictionary(getUser(upd).id, upd.message.text)
 
+        return buildMessageWithText(messageText, upd)
+
+//        val chatId = getChatId(upd)
+//        val menuMsgId = botRedisRepository.getMenuMsg(userId)
+//
+//        return EditMessageText.builder()
+//            .chatId(chatId)
+//            .messageId(menuMsgId!!.toInt())
+//            .text("Создан словарь '${dictionary.name}'\n Теперь введите слово и его перевод, порядок слов неважен$attention")
+//            .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
+//            .build()
+    }
+
+    private fun saveNewDictionary(userId: Long, dictName: String): String {
         val user = userRepository.findById(userId).get()
-        val dictName = upd.message.text
         var dictionary = Dictionary(name = dictName, owner = user)
         dictionary = dictionaryRepository.save(dictionary)
         botRedisRepository.putEditDict(userId, dictionary.id)
-
-        val chatId = getChatId(upd)
-        val menuMsgId = botRedisRepository.getMenuMsg(userId)
-
-        return EditMessageText.builder()
-            .chatId(chatId)
-            .messageId(menuMsgId!!.toInt())
-            .text("Создан словарь '${dictionary.name}'\n Теперь введите слово и его перевод, порядок слов неважен$attention")
-            .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
-            .build()
+        return "Создан словарь '${dictionary.name}'\n Теперь введите слово и его " +
+                "перевод, порядок слов неважен$attention"
     }
 
     fun addWord(upd: Update): EditMessageText {
-        val userId = getUser(upd).id
+        val messageText = saveNewWord(getUser(upd).id, upd.message.text)
 
-        val dictId = botRedisRepository.getEditDict(userId)!!
-        val dictionary = dictionaryRepository.findById(dictId.toLong()).get()
-        val words = upd.message.text
-        val eng = engPattern.find(words)!!.groupValues[0]
-        val rus = rusPattern.find(words)!!.groupValues[0]
+        return buildMessageWithText(messageText, upd)
+
+//        val chatId = getChatId(upd)
+//        val menuMsgId = botRedisRepository.getMenuMsg(userId)
+//
+//        return EditMessageText.builder()
+//            .chatId(chatId)
+//            .messageId(menuMsgId!!.toInt())
+//            .text("Редактируемый словарь '${dictionary.name}':${getWordsText(words)}")
+//            .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
+//            .build()
+    }
+
+    private fun saveNewWord(userId: Long, wordInput: String): String {
+        val dictId = botRedisRepository.getEditDict(userId)!!.toLong()
+        val dictionary = dictionaryRepository.findById(dictId).get()
+        val eng = engPattern.find(wordInput)!!.groupValues[0]
+        val rus = rusPattern.find(wordInput)!!.groupValues[0]
 
         var word = Word(rus = rus, eng = eng, dic = dictionary)
         word = wordRepository.save(word)
-        val chatId = getChatId(upd)
-        val menuMsgId = botRedisRepository.getMenuMsg(userId)
+        val words = wordRepository.findAllByDictionaryId(dictId)
 
-        return EditMessageText.builder()
-            .chatId(chatId)
-            .messageId(menuMsgId!!.toInt())
-            .text("В словарь '${dictionary.name}' добавлено слово:\n${word.rus} - ${word.eng}")
-            .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
-            .build()
+        return "Редактируемый словарь '${dictionary.name}':${getWordsText(words)}"
     }
 
-    fun wrongWord(upd: Update): EditMessageText {
+    fun wrongWord(upd: Update): EditMessageText =
+        buildMessageWithText("Слово '${upd.message.text}' не соответствует правилам ввода. Вот пара примеров:\n1) polar bear " +
+                    "белый медведь\n2) белый медведь polar bear", upd)
+//        val userId = getUser(upd).id
+//        val chatId = getChatId(upd)
+//        val menuMsgId = botRedisRepository.getMenuMsg(userId)
+//
+//        return EditMessageText.builder()
+//            .chatId(chatId)
+//            .messageId(menuMsgId!!.toInt())
+//            .text(
+//                "Слово '$words' не соответствует правилам ввода. Вот пара примеров:\n1) polar bear " +
+//                        "белый медведь\n2) белый медведь polar bear"
+//            )
+//            .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
+//            .build()
+
+
+    private fun buildMessageWithText(msgText: String, upd: Update): EditMessageText {
         val userId = getUser(upd).id
-
-        val words = upd.message.text
-
         val chatId = getChatId(upd)
         val menuMsgId = botRedisRepository.getMenuMsg(userId)
 
         return EditMessageText.builder()
             .chatId(chatId)
             .messageId(menuMsgId!!.toInt())
-            .text(
-                "Слово '$words' не соответствует правилам ввода. Вот пара примеров:\n1) polar bear " +
-                        "белый медведь\n2) белый медведь polar bear"
-            )
+            .text(msgText)
             .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
             .build()
-    }
-
-    private fun getFavorites(userId: Long) =
-        userRepository.findById(userId).get().favorites
-
-    private fun getFavoriteText(favorites: Collection<Dictionary>): String {
-        var result = ""
-        favorites.forEachIndexed { i, favDictionary ->
-            result += "\n${i + 1}. ${favDictionary.name}"
-        }
-
-        return result
     }
 
     private fun prepareInlineMarkup(buttons: List<InlineButton>): InlineKeyboardMarkup {
@@ -128,39 +138,12 @@ class CreationService(
         return InlineKeyboardMarkup(keyboard)
     }
 
-    fun addToFavMenu(upd: Update): AnswerInlineQuery {
-        val userId = getUser(upd).id
-        val dictionaries = dictionaryRepository.findNotFavoritesForUser(userId)
-        return prepareAnswerQuery(dictionaries, upd.inlineQuery.id)
+    private fun getWordsText(words: Collection<Word>): String {
+        var result = ""
+        words.forEachIndexed { i, word ->
+            result += "\n${i + 1}. ${word.eng} - ${word.rus}"
+        }
+
+        return result
     }
-
-    fun deleteFromFavMenu(upd: Update): AnswerInlineQuery {
-        val userId = getUser(upd).id
-        val favorites = userRepository.findById(userId).get().favorites
-        return prepareAnswerQuery(favorites, upd.inlineQuery.id)
-    }
-
-    private fun prepareAnswerQuery(
-        dictionaries: Collection<Dictionary>,
-        queryId: String
-    ): AnswerInlineQuery {
-        val results = dictionaries
-            .map { prepareDictArticle(it) }
-
-        return AnswerInlineQuery.builder()
-            .inlineQueryId(queryId)
-            .cacheTime(0)
-            .results(results.take(50))
-            .build()
-    }
-
-    private fun prepareDictArticle(dict: Dictionary) = InlineQueryResultArticle.builder()
-        .id(dict.id.toString())
-        .title(dict.name)
-        .inputMessageContent(
-            InputTextMessageContent.builder()
-                .messageText("Вы выбрали словарь:\n${dict.name}")
-                .build()
-        )
-        .build()
 }

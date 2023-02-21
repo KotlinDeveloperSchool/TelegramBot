@@ -38,7 +38,7 @@ class FreeTypeGameService(
 
     private fun getRandomWords(count: Int, words: List<Word>): MutableSet<Word> {
         val result = HashSet<Word>()
-        while (result.size < count) {
+        while (result.size < count && result.size < words.size) {
             val i = Random.nextInt(words.size)
             result.add(words[i])
         }

@@ -1,6 +1,6 @@
 --liquibase formatted sql
 
---changeset dakorshik:init dictionary data
+--changeset dakorshik:init_dictionary_data
 
 INSERT INTO public.dictionary (name, owner_id) VALUES ('Цвета', 1);
 INSERT INTO public.dictionary (name, owner_id) VALUES ('Внешность и характер', 1);
