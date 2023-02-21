@@ -30,33 +30,12 @@ class CreationService(
 
     fun creation(upd: Update): EditMessageText =
         buildMessageWithText("Введите название словаря$attention", upd)
-//        val userId = getUser(upd).id
-//
-//        val chatId = getChatId(upd).toString()
-//        val prevMsg = botRedisRepository.getMenuMsg(userId)
-//
-//        return EditMessageText.builder()
-//            .chatId(chatId)
-//            .messageId(prevMsg!!.toInt())
-//            .text("Введите название словаря$attention")
-//            .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
-//            .build()
 
 
     fun createDict(upd: Update): EditMessageText {
         var messageText = saveNewDictionary(getUser(upd).id, upd.message.text)
 
         return buildMessageWithText(messageText, upd)
-
-//        val chatId = getChatId(upd)
-//        val menuMsgId = botRedisRepository.getMenuMsg(userId)
-//
-//        return EditMessageText.builder()
-//            .chatId(chatId)
-//            .messageId(menuMsgId!!.toInt())
-//            .text("Создан словарь '${dictionary.name}'\n Теперь введите слово и его перевод, порядок слов неважен$attention")
-//            .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
-//            .build()
     }
 
     private fun saveNewDictionary(userId: Long, dictName: String): String {
@@ -72,16 +51,6 @@ class CreationService(
         val messageText = saveNewWord(getUser(upd).id, upd.message.text)
 
         return buildMessageWithText(messageText, upd)
-
-//        val chatId = getChatId(upd)
-//        val menuMsgId = botRedisRepository.getMenuMsg(userId)
-//
-//        return EditMessageText.builder()
-//            .chatId(chatId)
-//            .messageId(menuMsgId!!.toInt())
-//            .text("Редактируемый словарь '${dictionary.name}':${getWordsText(words)}")
-//            .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
-//            .build()
     }
 
     private fun saveNewWord(userId: Long, wordInput: String): String {
@@ -100,20 +69,6 @@ class CreationService(
     fun wrongWord(upd: Update): EditMessageText =
         buildMessageWithText("Слово '${upd.message.text}' не соответствует правилам ввода. Вот пара примеров:\n1) polar bear " +
                     "белый медведь\n2) белый медведь polar bear", upd)
-//        val userId = getUser(upd).id
-//        val chatId = getChatId(upd)
-//        val menuMsgId = botRedisRepository.getMenuMsg(userId)
-//
-//        return EditMessageText.builder()
-//            .chatId(chatId)
-//            .messageId(menuMsgId!!.toInt())
-//            .text(
-//                "Слово '$words' не соответствует правилам ввода. Вот пара примеров:\n1) polar bear " +
-//                        "белый медведь\n2) белый медведь polar bear"
-//            )
-//            .replyMarkup(prepareInlineMarkup(listOf(InlineButton.DictMenu, InlineButton.MainMenu)))
-//            .build()
-
 
     private fun buildMessageWithText(msgText: String, upd: Update): EditMessageText {
         val userId = getUser(upd).id
