@@ -58,4 +58,9 @@ interface GameService {
         words.forEach { result.append("\n${it.eng}: ${it.rus}") }
         return result.toString()
     }
+
+    fun GameService.defaultEndGame(userId: Long, redisRepo: BotRedisRepository): String {
+        redisRepo.deleteState(userId)
+        return "Тренировка окончена! Перейдите в главное меню /menu"
+    }
 }
