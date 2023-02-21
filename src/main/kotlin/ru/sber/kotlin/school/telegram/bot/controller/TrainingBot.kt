@@ -47,7 +47,7 @@ class TrainingBot(
     }
 
     fun dictExtension(): AbilityExtension {
-        return DictExtension(customSender, predicates, dictionaryMenuService, dictionaryService, sender)
+        return DictExtension(customSender, predicates, dictionaryMenuService, dictionaryService)
     }
 
     fun creationExtension(): AbilityExtension {
