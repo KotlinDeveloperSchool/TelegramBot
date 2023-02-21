@@ -1,6 +1,7 @@
 package ru.sber.kotlin.school.telegram.bot.game
 
 import io.mockk.*
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.telegram.abilitybots.api.util.AbilityUtils
@@ -33,6 +34,11 @@ class OneOfFourGameServiceTest {
         Word(3, "rus3", "eng3", dic),
         Word(4, "rus4", "eng4", dic)
     )
+
+    @AfterEach
+    fun unMockk() {
+        unmockkAll()
+    }
 
     @Test
     fun prepareTest() {
@@ -95,7 +101,7 @@ class OneOfFourGameServiceTest {
         every { botRedisRep.deleteState(any()) } just Runs
 
         val result = oneOfFourGameService.getTextForRound(0)
-        val expected = "Тренировка окончена! Но вы можете начать сначала..."
+        val expected = "Тренировка окончена! Перейдите в главное меню /menu"
         assertEquals(expected, result)
     }
 

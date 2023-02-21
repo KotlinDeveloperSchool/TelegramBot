@@ -83,7 +83,7 @@ class FreeTypeGameServiceTest {
     }
 
     @Test
-    fun getTextForRoundTest1() {
+    fun getTextForRoundTest() {
         every { botRedisRep.putAnswer(any(), any()) } just Runs
 
         every { botRedisRep.rightPopMsg(any()) } returns "word#stub"
@@ -94,14 +94,14 @@ class FreeTypeGameServiceTest {
     }
 
     @Test
-    fun getTextForRoundTest2() {
+    fun getTextForRoundTestOfNull() {
         every { botRedisRep.rightPopMsg(any()) } returns null
         every { botRedisRep.deleteState(any()) } just Runs
 
         val result = freeTypeGameService.getTextForRound(0)
 
         assertEquals(
-            "Тренировка окончена! Но вы можете начать сначала...",
+            "Тренировка окончена! Перейдите в главное меню /menu",
             result
         )
 
