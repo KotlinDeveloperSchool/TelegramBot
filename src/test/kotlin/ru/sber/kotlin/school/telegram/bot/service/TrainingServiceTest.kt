@@ -1,7 +1,6 @@
 package ru.sber.kotlin.school.telegram.bot.service
 
 import io.mockk.*
-import net.bytebuddy.pool.TypePool.Empty
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -29,51 +28,25 @@ internal class TrainingServiceTest {
     private val botRedisRepository = mockkClass(BotRedisRepository::class)
     private val gameSelector = mockkClass(GameSelector::class)
     private val update = mockkClass(Update::class)
-    private val trainingService =
-        TrainingService(userRepository, dictionaryRepository, botRedisRepository, gameSelector)
+    private val trainingService = TrainingService(userRepository,dictionaryRepository,botRedisRepository,gameSelector)
     private val gameService = mockkClass(GameService::class)
     private val message = mockkClass(Message::class)
     private val query = mockkClass(InlineQuery::class)
 
-    @BeforeEach
-    fun setUp() {
-    }
-
-    @AfterEach
-    fun tearDown() {
-    }
-
     companion object {
+
         @JvmStatic
         fun dataForGetFavorites() = listOf(
-            Arguments.of(
-                "4", User(
-                    2, "superman", "Ivan", "Ivanov",
-                    Collections.emptySet<Dictionary>()
-                )
-            ),
-            Arguments.of(
-                "4", User(
-                    2, "superman", "Ivan", "Ivanov",
-                    mutableSetOf(
-                        Dictionary(
-                            0, "Словарь А", Collections.emptyList(),
-                            User(2, "superman", "Ivan", "Ivanov")
-                        )
-                    )
-                )
-            ),
+            Arguments.of("4",User(2,"superman","Ivan","Ivanov",
+                Collections.emptySet<Dictionary>()),5678),
+            Arguments.of("4",User(2,"superman","Ivan","Ivanov",
+                mutableSetOf(Dictionary(0,"Словарь А", Collections.emptyList(),
+                    User(2,"superman","Ivan","Ivanov")))),5678),
         )
 
         @JvmStatic
         fun dataForGetGameStyles() = listOf(
-            Arguments.of(
-                1234, 5678, "Время",
-                Dictionary(
-                    0, "Словарь А", Collections.emptyList(),
-                    User(2, "superman", "Ivan", "Ivanov")
-                )
-            ),
+            Arguments.of(1234, 5678, "Время", 2),
         )
 
         @JvmStatic
@@ -99,12 +72,12 @@ internal class TrainingServiceTest {
 
     @ParameterizedTest
     @MethodSource("dataForGetFavorites")
-    fun getFavorites(queryId: String, user: User) {
+    fun getFavorites(queryId: String, user: User, userId: Long) {
         //given
-        every { update.inlineQuery } returns query
         every { update.hasMessage() } returns true
+        every { update.inlineQuery } returns query
         every { update.message } returns message
-        every { update.message.from.id } returns user.id
+        every { update.message.from.id } returns userId
         every { userRepository.findById(any()) } returns Optional.of(user)
         every { query.id } returns queryId
 
@@ -112,28 +85,28 @@ internal class TrainingServiceTest {
         val result = trainingService.getFavorites(update)
 
         //then
-        verify(exactly = 1) { userRepository.findById(any()) }
-        assertEquals(queryId, result.inlineQueryId)
+        verify (exactly = 1) { userRepository.findById(any()) }
+        assertEquals(queryId,result.inlineQueryId)
     }
 
     @ParameterizedTest
     @MethodSource("dataForGetGameStyles")
-    fun getGameStyles(chatId: Long, userId: Long, dictionaryName: String, dictionary: Dictionary) {
+    fun getGameStyles(chatId: Long, userId: Long, dictionaryName: String, dictionaryId: Long){
         //given
         every { update.hasMessage() } returns true
         every { update.message } returns message
         every { update.message.chatId } returns chatId
         every { update.message.text } returns dictionaryName
         every { update.message.from.id } returns userId
-        every { dictionaryRepository.findByNameForUser(dictionaryName, userId).get() } returns dictionary
-        every { botRedisRepository.putDictionary(userId, dictionary.id) } returns Unit
+        every { dictionaryRepository.findByNameForUser(any(), any()).get().id } returns dictionaryId
+        every { botRedisRepository.putDictionary(any(), any()) } returns Unit
 
         //when
         val result = trainingService.getGameStyles(update)
 
         //then
-        verify(exactly = 1) { dictionaryRepository.findByNameForUser(dictionaryName, userId).get() }
-        verify(exactly = 1) { botRedisRepository.putDictionary(userId, dictionary.id) }
+        verify (exactly = 1) { dictionaryRepository.findByNameForUser(any(), any()).get() }
+        verify (exactly = 1) { botRedisRepository.putDictionary(any(), any()) }
         assertEquals(chatId, result.chatId.toLong())
         assertEquals("Теперь выберите режим изучения", result.text)
     }
@@ -149,20 +122,18 @@ internal class TrainingServiceTest {
         every { update.message.text } returns text
         every { gameStyle.title() } returns text
         every { update.message.from.id } returns userId
-        every { botRedisRepository.putStyle(userId, gStyle) } returns Unit
-        every { gameSelector.getGameService(gStyle).prepare(userId) } returns Unit
+        every { botRedisRepository.putStyle(any(),any()) } returns Unit
+        every { gameSelector.getGameService(gStyle).prepare(any()) } returns Unit
 
         //when
         val result = trainingService.prepareGame(update)
 
         //then
-        verify(exactly = 1) { botRedisRepository.putStyle(userId, gStyle) }
-        verify(exactly = 1) { gameSelector.getGameService(gStyle).prepare(userId) }
+        verify (exactly = 1) { botRedisRepository.putStyle(any(),any()) }
+        verify (exactly = 1) { gameSelector.getGameService(gStyle).prepare(any()) }
         assertEquals(chatId, result.chatId.toLong())
-        assertEquals(
-            "На экране будет представлено слово, Вам необходимо " +
-                    "ввести и отправить его перевод", result.text
-        )
+        assertEquals("На экране будет представлено слово, Вам необходимо " +
+                "ввести и отправить его перевод", result.text)
 
     }
 
@@ -175,14 +146,14 @@ internal class TrainingServiceTest {
         every { update.message.chatId } returns chatId
         every { update.message.from.id } returns userId
         every { gameSelector.getGameService(userId) } returns gameService
-        every { gameService.getWordsForLearning(userId) } returns words
+        every { gameService.getWordsForLearning(any()) } returns words
 
         //when
         val result = trainingService.showWords(update)
 
         //then
-        verify(exactly = 1) { gameSelector.getGameService(userId) }
-        verify(exactly = 1) { gameService.getWordsForLearning(userId) }
+        verify (exactly = 1) { gameSelector.getGameService(userId) }
+        verify (exactly = 1) { gameService.getWordsForLearning(any()) }
         assertEquals(chatId, result.chatId.toLong())
         assertEquals(words, result.text)
     }
@@ -197,16 +168,16 @@ internal class TrainingServiceTest {
         every { update.message.chatId } returns chatId
         every { update.message.from.id } returns userId
         every { gameSelector.getGameService(userId) } returns gameService
-        every { gameService.getTextForRound(userId) } returns text
-        every { gameService.getKeyboardForRound(userId) } returns repleKeyboard
+        every { gameService.getTextForRound(any()) } returns text
+        every { gameService.getKeyboardForRound(any()) } returns repleKeyboard
 
         //when
         val result = trainingService.gameRound(update)
 
         //then
-        verify(exactly = 2) { gameSelector.getGameService(userId) }
-        verify(exactly = 1) { gameService.getTextForRound(userId) }
-        verify(exactly = 1) { gameService.getKeyboardForRound(userId) }
+        verify (exactly = 2) { gameSelector.getGameService(userId) }
+        verify (exactly = 1) { gameService.getTextForRound(any()) }
+        verify (exactly = 1) { gameService.getKeyboardForRound(any()) }
         assertEquals(chatId, result.chatId.toLong())
         assertEquals(text, result.text)
     }
@@ -226,8 +197,8 @@ internal class TrainingServiceTest {
         val result = trainingService.gameAnswer(update)
 
         //then
-        verify(exactly = 1) { gameSelector.getGameService(userId) }
-        verify(exactly = 1) { gameService.checkAnswer(update) }
+        verify (exactly = 1) { gameSelector.getGameService(userId) }
+        verify (exactly = 1) { gameService.checkAnswer(update) }
         assertEquals(chatId, result.chatId.toLong())
         assertEquals(text, result.text)
     }
