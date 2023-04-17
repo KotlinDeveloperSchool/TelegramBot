@@ -28,8 +28,7 @@ class MenuExtension(
     fun newMainMenu(): Reply = Reply.of(
         customSender.action(mainMenuService::createMainMenu)
             .toState(State.MainMenu)
-            .deleteMenuMsg()
-            .deleteKeyboard("Создаём главное меню...")
+            .deleteKeyboard("Бот по изучению Английского языка")
             .botMsg()
             .menuMsg()
             .send(),

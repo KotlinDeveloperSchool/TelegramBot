@@ -14,6 +14,18 @@ enum class InlineButton(
         override fun getBtn(): InlineKeyboardButton =
             callbackBtn(State.DictMenu.toString())
     },
+    TranslateMenu("Переводчик") {
+        override fun getBtn(): InlineKeyboardButton =
+            callbackBtn(State.TranslateMenu.toString())
+    },
+    TranslateToRussia("Перевод с Английского на Русский") {
+        override fun getBtn(): InlineKeyboardButton =
+            callbackBtn(State.TranslateToRus.toString())
+    },
+    TranslateToEnglish("Перевод с Русского на Английский") {
+        override fun getBtn(): InlineKeyboardButton =
+            callbackBtn(State.TranslateToEng.toString())
+    },
     AddFromReady("Выбрать для изучени") {
         override fun getBtn(): InlineKeyboardButton =
             switchToInlineBtn(InlQuery.AllDictionaries.text)

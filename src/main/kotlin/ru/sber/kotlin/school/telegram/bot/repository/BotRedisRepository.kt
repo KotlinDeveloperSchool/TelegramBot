@@ -20,6 +20,7 @@ class BotRedisRepository(
     private val PREV_BOT_MSG_KEY = "botMsg"
     private val PREV_MENU_MSG_KEY = "menuMsg"
     private val PREV_USER_MSG_KEY = "userMsg"
+    private val TRANSLATOR = "translator"
 
     private val gameQueueTemplate = "game_%d"
 
@@ -134,6 +135,19 @@ class BotRedisRepository(
     fun deleteUserMsg(userId: Long) {
         redisTemplate.opsForHash<String, String>()
             .delete(PREV_USER_MSG_KEY, userId.toString())
+    }
+
+    fun putTranslatedLang(userId: Long, language: String){
+        redisTemplate.opsForHash<String, String>()
+            .put(TRANSLATOR,userId.toString(), language)
+    }
+
+    fun getTranslatedLang(userId: Long): String? =
+        redisTemplate.opsForHash<String, String>().get(TRANSLATOR, userId.toString())
+
+    fun deleteTranslatedLang(userId: Long) {
+        redisTemplate.opsForHash<String, String>()
+            .delete(TRANSLATOR, userId.toString())
     }
 
     @EventListener(ContextClosedEvent::class)

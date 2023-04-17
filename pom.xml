@@ -17,6 +17,7 @@
 		<java.version>1.8</java.version>
 		<kotlin.version>1.6.21</kotlin.version>
 		<junit.jupiter.version>5.7.2</junit.jupiter.version>
+		<feign.version>11.7</feign.version>
 	</properties>
 	<dependencies>
 		<!--Kotlin-->
@@ -46,6 +47,28 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+
+		<!--API-->
+		<dependency>
+			<groupId>io.github.openfeign</groupId>
+			<artifactId>feign-core</artifactId>
+			<version>${feign.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.openfeign</groupId>
+			<artifactId>feign-httpclient</artifactId>
+			<version>${feign.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.openfeign</groupId>
+			<artifactId>feign-hystrix</artifactId>
+			<version>${feign.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.openfeign</groupId>
+			<artifactId>feign-jackson</artifactId>
+			<version>${feign.version}</version>
 		</dependency>
 
 		<!--Bot-->

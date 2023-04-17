@@ -91,13 +91,14 @@ class MainMenuService(
     private fun mainMenuText(hasFavorites: Boolean): String {
         val res = StringBuilder("Главное меню")
         if (!hasFavorites)
-            res.append("\nДля начала выберите словари для изучения")
+            res.append("\nДля начала выберите словари для изучения.\nТакже к Вашим услугам переводчик.")
 
         return res.toString()
     }
 
     private fun mainMenuMarkup(hasFavorites: Boolean): InlineKeyboardMarkup {
         val keyboard = mutableListOf(listOf(InlineButton.DictMenu.getBtn()))
+        keyboard.add(0, listOf(InlineButton.TranslateMenu.getBtn()))
         if (hasFavorites)
             keyboard.add(0, listOf(InlineButton.Training.getBtn()))
 
@@ -112,5 +113,6 @@ class MainMenuService(
         botRedisRepository.deleteDictionary(userId)
         botRedisRepository.deleteStyle(userId)
         botRedisRepository.deleteEditDict(userId)
+        botRedisRepository.deleteTranslatedLang(userId)
     }
 }

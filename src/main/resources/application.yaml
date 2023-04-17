@@ -11,10 +11,13 @@ spring:
     database: 0
     host: localhost
     port: 6379
-    password: redis
+    #password: redis
     timeout: 60000
 
 telegram:
   bot:
     token: ${BOT_TOKEN}
     name: ${BOT_NAME}
+    translator:
+      api_key:
+        yandex: ${API_KEY_YANDEX_TRANSLATOR}
