@@ -99,6 +99,7 @@
 			<groupId>io.mockk</groupId>
 			<artifactId>mockk</artifactId>
 			<version>1.12.0</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
